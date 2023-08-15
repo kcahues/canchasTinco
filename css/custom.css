@@ -1,0 +1,87 @@
+/* custom.css */
+.custom-navbar {
+    background-color: #D34805; /* Cambia este valor al color que deseas */
+  }
+
+  .navbar-nav .nav-link {
+    color: white; /* Texto en blanco */
+  }
+  
+  /* Estilos para los botones, si es necesario */
+  .btn-orange {
+    background-color: #D34805;
+    color: white;
+  }
+  
+  /* En tu archivo CSS personalizado */
+.text-orange {
+    color: #D34805; /* Color naranja */
+  }
+  
+  .text-white {
+    color: white; /* Color blanco */
+  }
+  
+  /* Si deseas dar estilo a los botones naranjas */
+  .btn-orange {
+    background-color: #D34805;
+    border-color: #D34805;
+    color: white;
+  }
+  
+  /* Si deseas dar estilo al fondo oscuro del pie de página */
+  .bg-dark {
+    background-color: black;
+  }
+  
+  body {
+    background-color: black;
+    color: white; /* Texto en blanco para contraste */
+  }
+
+  /* En tu archivo CSS personalizado */
+.btn-custom {
+    background-color: #333; /* Gris oscuro */
+    border-color: #333;
+    color: white; /* Texto en blanco para contraste */
+  }
+  
+  .btn-custom:hover {
+    background-color: #555; /* Gris más oscuro al pasar el cursor */
+    border-color: #555;
+  }
+
+  /* En tu archivo CSS personalizado */
+#btnSubir {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: none;
+  }
+  
+  #btnSubir.show {
+    display: block;
+  }
+
+  .table{
+    background-color: #1f1d1d; /* Cambia el color de fondo de la tabla según tu preferencia */
+    border-radius: 8px; /* Agrega un borde redondeado a la tabla */
+  }
+  
+  .table th,
+  .table td {
+    border: none; /* Elimina los bordes de las celdas de la tabla */
+  }
+  
+  /* Estilos para los botones de selección */
+  .btn-primary,
+  .btn-success {
+    background-color: #007bff; /* Cambia el color de fondo del botón según tu preferencia */
+    border-color: #007bff; /* Cambia el color del borde del botón según tu preferencia */
+  }
+  
+  .btn-primary:hover,
+  .btn-success:hover {
+    background-color: #0056b3; /* Cambia el color de fondo al pasar el mouse por encima */
+    border-color: #0056b3; /* Cambia el color del borde al pasar el mouse por encima */
+  }

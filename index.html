@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canchas Tinco</title>
+    
+  <!--  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css">
+    -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/custom.css">
+    
+</head>
+<body>
+
+<!-- Barra de navegación -->
+<nav class="navbar navbar-expand-lg navbar-light custom-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="#"><img src="img/logo.png" alt="Logo" class="img-fluid me-2" style="max-width: 50px;"></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="#">Inicio</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Servicios</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Contacto</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#Disponibilidad">Disponibilidad</a>
+          </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Contenido principal -->
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-lg-8">
+        <div id="miCarrusel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+              <div class="carousel-item active">
+                <img src="img/carrousel/cancha1.jpg" class="d-block w-100 img-fluid carousel-image" alt="Imagen 1">
+              </div>
+              <div class="carousel-item">
+                <img src="img/carrousel/cancha2.jpeg" class="d-block w-100 img-fluid carousel-image" alt="Imagen 2">
+              </div>
+              <div class="carousel-item">
+                <img src="img/carrousel/cancha3.jpeg" class="d-block w-100 img-fluid carousel-image" alt="Imagen 3">
+              </div>
+              <!-- Agrega más elementos carousel-item según necesites -->
+            </div>
+            <a class="carousel-control-prev" href="#miCarrusel" role="button" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Anterior</span>
+            </a>
+            <a class="carousel-control-next" href="#miCarrusel" role="button" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Siguiente</span>
+            </a>
+          </div>
+          
+          <h1 class="text-orange">Canchas Tinco</h1>
+          <p class="text-white">¡Explora nuestros servicios y reserva una cancha de fútbol hoy mismo!</p>
+    </div>
+    <div class="col-lg-4">
+            <h2 class="text-center mb-4">Tarifas</h2>
+            <div class="table-responsive">
+              <table class="table table-bordered table-dark">
+                <thead>
+                    <tr>
+                      <th scope="col">Horario</th>
+                      <th colspan="3" scope="col">Precio</th>
+                      
+                    </tr>
+                    <tr>
+                      <th scope="col"></th>
+                      <th scope="col">Futbol 5</th>
+                      <th scope="col">Futbol 7</th>
+                      </tr>
+                  </thead>
+                <tbody>
+                  <tr>
+                    <td>8:00  am - 05:00 pm</td>
+                    <td>Q 150.00</td>
+                    <td>Q 250.00</td>
+                  </tr>
+                  <tr>
+                    <td>06:00 pm - 10:00 pm</td>
+                    <td>Q 200.00</td>
+                    <td>Q 300.00</td>
+                  </tr>
+                  <tr>
+                    <td>11:00 pm - adelante</td>
+                    <td>Q 250.00</td>
+                    <td>Q 350.00</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          
+    </div>
+  </div>
+  <div class="row" id="Disponibilidad">
+    <div class="col-lg-12">
+        <h1 class="text-orange">Canchas Tinco</h1>
+          <p class="text-white">¡Explora nuestros servicios y reserva una cancha de fútbol hoy mismo!</p>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts de Bootstrap (requieren jQuery) -->
+<!-- Botón de Subir -->
+<button id="btnSubir" class="btn btn-custom btn-floating btn-back-to-top"><i class="fas fa-arrow-up"></i></button>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
