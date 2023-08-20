@@ -85,3 +85,100 @@
     background-color: #0056b3; /* Cambia el color de fondo al pasar el mouse por encima */
     border-color: #0056b3; /* Cambia el color del borde al pasar el mouse por encima */
   }
+
+/* Estilos para el menú transparente */
+.custom-navbar {
+  background-color: rgba(211, 72, 5, 0.6); /* Cambia el valor alfa para la opacidad del menú */
+  background-color: #403f3f;
+  position: absolute;
+  width: 100%;
+  z-index: 1;
+  backdrop-filter: blur(10px); /* Agrega un efecto de desenfoque al menú (opcional) */
+}
+
+/* Estilos para la imagen de fondo y la superposición */
+.landing-page {
+  
+  position: relative;
+  background-image: url('/img/carrousel/portada.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 100vh; /*calc(100vh - 70px); /* Ajusta el valor para que la imagen esté debajo del menú */
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /*background-color: rgba(0, 0, 0, 0.5);  Cambia el valor alfa para la opacidad del overlay */
+}
+
+.content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white; 
+  z-index: 2;
+}
+
+.landing-page {
+  position: relative;
+  background-image: url('/img/carrousel/portada.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+  z-index: 0;
+}
+
+.content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+  z-index: 2;
+}
+
+.img-left,
+  .img-right {
+    width: 10vw; /* Ajusta el ancho de las imágenes según tus necesidades */
+    height: auto;
+    margin: 10px 10px; /* Añade margen entre las imágenes y el título */
+    vertical-align: middle; /* Alinear verticalmente las imágenes con el título */
+  }
+
+  .btn-orange {
+    background-color: #D34805;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .btn-orange:hover {
+    background-color: #FF7F50; /* Cambia el color en el hover si deseas */
+  }
+
+  .footer a {
+    color: white;
+    text-decoration: none; /* Quita el subrayado */
+  }
+
+  .card-img-top {
+    width: 100%;
+    height: 300px; /* Puedes ajustar esta altura según tus necesidades */
+    object-fit: cover;
+  }
+
+  .carousel-image{
+    width: 100%;
+    height: 500px;
+    object-fit: cover;
+  }
