@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,7 +12,155 @@
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/custom.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    
+    <script src="/dist/index.global.min.js"></script>
+    
+    <!-- Sweetalert2 -->
+<script src="/js/sweetalert2.all.min.js"></script>
 
+<!-- Include FullCalendar JS & CSS library -->
+<link href="/js/fullcalendar/lib/main.css" rel="stylesheet" />
+<script src="/js/fullcalendar/lib/main.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var calendarEl = document.getElementById('calendar');
+
+  var calendar = new FullCalendar.Calendar(calendarEl, {
+    
+    initialView: 'dayGridMonth',
+    height: 650,
+    events: 'fetchEvents.php',
+    
+    selectable: true,
+    select: async function (start, end, allDay) {
+      const { value: formValues } = await Swal.fire({
+        title: 'Crear reservación',
+        confirmButtonText: 'Crear',
+        showCloseButton: true,
+		    showCancelButton: true,
+        html:
+          '<input id="swalEvtTitle" class="swal2-input" placeholder="Ingresa titulo">' +
+          '<textarea id="swalEvtDesc" class="swal2-input" placeholder="Ingresa descripción"></textarea>' +
+          '<input id="swalEvtURL" class="swal2-input" placeholder="Observaciones">',
+        focusConfirm: false,
+        preConfirm: () => {
+          return [
+            document.getElementById('swalEvtTitle').value,
+            document.getElementById('swalEvtDesc').value,
+            document.getElementById('swalEvtURL').value
+          ]
+        }
+      });
+
+      if (formValues) {
+        // Add event
+        fetch("eventHandler.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ request_type:'addEvent', start:start.startStr, end:start.endStr, event_data: formValues}),
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status == 1) {
+            Swal.fire('Reservación creada correctamente!', '', 'success');
+          } else {
+            Swal.fire(data.error, '', 'error');
+          }
+
+          // Refetch events from all sources and rerender
+          calendar.refetchEvents();
+        })
+        .catch(console.error);
+      }
+    },
+
+    eventClick: function(info) {
+      info.jsEvent.preventDefault();
+      
+      // change the border color
+      info.el.style.borderColor = 'red';
+      
+      Swal.fire({
+        title: info.event.title,
+        //text: info.event.extendedProps.description,
+        icon: 'info',
+        html:'<p>'+info.event.extendedProps.description+'</p>',
+        showCloseButton: true,
+        showCancelButton: true,
+        showDenyButton: true,
+        cancelButtonText: 'Cerrar',
+        confirmButtonText: 'Borrar',
+        denyButtonText: 'Editar',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Delete event
+          fetch("eventHandler.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ request_type:'deleteEvent', event_id: info.event.id}),
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status == 1) {
+              Swal.fire('Reservación borrada correctamente!', '', 'success');
+            } else {
+              Swal.fire(data.error, '', 'error');
+            }
+
+            // Refetch events from all sources and rerender
+            calendar.refetchEvents();
+          })
+          .catch(console.error);
+        } else if (result.isDenied) {
+          // Edit and update event
+          Swal.fire({
+            title: 'Editar reservación',
+            html:
+              '<input id="swalEvtTitle_edit" class="swal2-input" placeholder="Ingresa titulo" value="'+info.event.title+'">' +
+              '<textarea id="swalEvtDesc_edit" class="swal2-input" placeholder="Ingresa descripción">'+info.event.extendedProps.description+'</textarea>' +
+              '<input id="swalEvtURL_edit" class="swal2-input" placeholder="Ingresa observaciones" value="'+info.event.url+'">',
+            focusConfirm: false,
+            confirmButtonText: 'Actualizar',
+            preConfirm: () => {
+            return [
+              document.getElementById('swalEvtTitle_edit').value,
+              document.getElementById('swalEvtDesc_edit').value,
+              document.getElementById('swalEvtURL_edit').value
+            ]
+            }
+          }).then((result) => {
+            if (result.value) {
+              // Edit event
+              fetch("eventHandler.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ request_type:'editEvent', start:info.event.startStr, end:info.event.endStr, event_id: info.event.id, event_data: result.value})
+              })
+              .then(response => response.json())
+              .then(data => {
+                if (data.status == 1) {
+                  Swal.fire('Reservación actualizada correctamente!', '', 'success');
+                } else {
+                  Swal.fire(data.error, '', 'error');
+                }
+
+                // Refetch events from all sources and rerender
+                calendar.refetchEvents();
+              })
+              .catch(console.error);
+            }
+          });
+        } else {
+          Swal.close();
+        }
+      });
+    }
+  });
+
+  calendar.render();
+});
+</script>
 </head>
 <body>
 
@@ -44,7 +192,7 @@
         </ul>
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link" href="login.html">Login</a>
+              <a class="nav-link" href="login.php">Login</a>
             </li>
           </ul>
 
@@ -113,8 +261,8 @@
           <img src="img/servicio/cancha5.jpg" class="card-img-top img-fluid" alt="Cancha Fútbol 5">
           <div class="card-body">
             <h5 class="card-title text-light">Reserva Cancha Fútbol 5</h5>
-            <p class="card-text text-light">Reserva en nuestras canchas de fútbol 5 para poder jugar con tus amigos.</p>
-            <a href="#" class="btn btn-primary btn-orange">Reservar</a>
+            <p class="card-text text-light ">Reserva en nuestras canchas de fútbol 5 para poder jugar con tus amigos.</p>
+            <a href="#" class="btn btn-primary btn-orange w-100">Reservar</a>
           </div>
         </div>
         <div class="card mb-4 bg-dark">
@@ -122,7 +270,7 @@
           <div class="card-body">
             <h5 class="card-title text-light">Reserva Cancha Fútbol 7</h5>
             <p class="card-text text-light">Reserva en nuestras canchas de fútbol 7 para poder jugar con tus amigos.</p>
-            <a href="#" class="btn btn-primary btn-orange">Reservar</a>
+            <a href="#" class="btn btn-primary btn-orange w-100">Reservar</a>
           </div>
         </div>
       </div>
@@ -131,8 +279,8 @@
           <img src="img/servicio/canchatenis.jpg" class="card-img-top img-fluid" alt="Cancha Tenis">
           <div class="card-body">
             <h5 class="card-title text-light">Reserva Cancha de Tenis</h5>
-            <p class="card-text text-light">Reserva en nuestras canchas de tenis para poder jugar con tus amigos.</p>
-            <a href="#" class="btn btn-primary btn-orange">Reservar</a>
+            <p class="card-text text-light">Reserva en nuestras canchas de tenis para poder jugar con tus amigos y divertirte.</p>
+            <a href="#" class="btn btn-primary btn-orange w-100">Reservar</a>
           </div>
         </div>
         <div class="card mb-4 bg-dark">
@@ -140,7 +288,7 @@
           <div class="card-body">
             <h5 class="card-title text-light">Ranchos para Actividades</h5>
             <p class="card-text text-light">Reserva las áreas verdes para poder tener actividades con tu familia y amigos.</p>
-            <a href="#contacto" class="btn btn-primary btn-orange">Contacto</a>
+            <a href="#contacto" class="btn btn-primary btn-orange w-100">Contacto</a>
           </div>
         </div>
       </div>
@@ -267,11 +415,14 @@
   <div class="row" id="Disponibilidad">
     <div class="col-lg-12">
         <h1 class="text-orange">DISPONIBILIDAD</h1>
-          <img src="img/calendario.jpeg" width="100%" height="auto" max-height="600" alt="calendario">
+        <iframe src="https://calendar.google.com/calendar/embed?height=600&wkst=1&bgcolor=%23616161&ctz=America%2FGuatemala&mode=WEEK&title=Canchas&src=a2V2aW4uY2FodWVzQGdtYWlsLmNvbQ&color=%23039BE5" style="border:solid 1px #777" width="100%" height="600" frameborder="0" scrolling="no"></iframe>
+          
     </div>
   </div>
 </section>
-
+<section class="container my-5" >
+  <div id="calendar" class="text-orange"></div>
+</section>
 <!-- Scripts de Bootstrap (requieren jQuery) -->
 
 <button id="btnSubir" class="btn btn-custom btn-floating btn-back-to-top"><i class="fas fa-arrow-up"></i></button>

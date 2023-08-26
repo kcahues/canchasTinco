@@ -182,3 +182,8 @@
     height: 500px;
     object-fit: cover;
   }
+
+  .darken {
+    background-color: rgba(0, 0, 0, 0.5); /* Color de fondo semi-transparente */
+    color: white; /* Color del texto */
+  }
