@@ -95,6 +95,14 @@
   z-index: 1;
   backdrop-filter: blur(10px); /* Agrega un efecto de desenfoque al menú (opcional) */
 }
+.custom-navbar2 {
+  background-color: rgba(211, 72, 5, 0.6); /* Cambia el valor alfa para la opacidad del menú */
+  background-color: #403f3f;
+  position: absolute;
+  width: 100%;
+  
+  backdrop-filter: blur(10px); /* Agrega un efecto de desenfoque al menú (opcional) */
+}
 
 /* Estilos para la imagen de fondo y la superposición */
 .landing-page {
@@ -116,6 +124,16 @@
 }
 
 .content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white; 
+  z-index: 2;
+}
+
+.content2 {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -187,3 +205,54 @@
     background-color: rgba(0, 0, 0, 0.5); /* Color de fondo semi-transparente */
     color: white; /* Color del texto */
   }
+
+  .btn-outline-orange {
+    color: #FFA500;
+    border-color: #FFA500;
+}
+
+.actividad{
+  padding-top: 50px;
+}
+
+.cust{
+  background-color: #403f3f;
+  backdrop-filter: blur(10px);
+}
+
+/* Estilos para los botones oscuros */
+.dark-button {
+  background-color: #333; /* Color de fondo oscuro */
+  color: #fff; /* Color de texto blanco */
+  padding: 10px 20px; /* Espaciado interior del botón */
+  border: none; /* Sin borde */
+  cursor: pointer; /* Cambiar el cursor al pasar el ratón */
+  margin: 5px; /* Márgenes para separar los botones */
+  border-radius: 5px; /* Bordes redondeados */
+  font-weight: bold; /* Texto en negrita */
+}
+
+/* Estilos adicionales si se desea */
+.dark-button:hover {
+  background-color: #555; /* Cambio de color al pasar el ratón */
+}
+
+.dark-button:focus {
+  outline: none; /* Elimina el contorno al hacer clic */
+}
+
+.table-responsive {
+  max-width: 100%; /* Ajusta el ancho máximo según tus necesidades */
+  overflow-x: auto; /* Habilita el scroll horizontal si es necesario */
+}
+
+.fc-timeGrid-slot {
+  width: 60px; /* Ajusta el ancho según tus preferencias */
+}
+
+/* Haz que los eventos sean un poco más pequeños */
+.fc-event {
+  font-size: 12px; /* Ajusta el tamaño de fuente según tus preferencias */
+  padding: 2px 4px; /* Ajusta el relleno interno según tus preferencias */
+  border-radius: 4px; /* Ajusta la esquina redondeada según tus preferencias */
+}

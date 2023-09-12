@@ -1,3 +1,40 @@
+<?php
+session_start(); // Inicia la sesión si aún no está iniciada
+
+// Si el usuario está autenticado, obtén su ID de usuario
+$idUsuario = isset($_SESSION["idUsuario"]) ? $_SESSION["idUsuario"] : null;
+
+// Obtén la página actual y la dirección IP del usuario
+$paginaVisitada = $_SERVER["REQUEST_URI"];
+$direccionIP = $_SERVER["REMOTE_ADDR"];
+
+// Crea una conexión a la base de datos (reemplaza con tus propios datos)
+$conexion = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
+
+// Verifica la conexión
+
+if ($conexion->connect_error) {
+    echo $conexion->connect_error;
+    die("Error de conexión: " . $conexion->connect_error);
+}
+
+// Prepara la consulta para insertar un registro en la tabla de registro de actividad
+$consulta = "INSERT INTO registroactividad (idUsuario, fechaHora, paginaVisitada, direccionIP) VALUES (?, NOW(), ?, ?)";
+$stmt = $conexion->prepare($consulta);
+if (!$stmt->bind_param("iss", $idUsuario, $paginaVisitada, $direccionIP)) {
+  die("Error en bind_param(): " . $stmt->error);
+  echo $stmt->error;
+}
+$stmt->bind_param("iss", $idUsuario, $paginaVisitada, $direccionIP);
+
+// Ejecuta la consulta
+$stmt->execute();
+
+// Cierra la consulta y la conexión
+$stmt->close();
+$conexion->close();
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,9 +47,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="/css/custom.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    
+    <link rel="stylesheet" href="plugin/components/Font Awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="plugin/whatsapp-chat-support.css">
     <script src="/dist/index.global.min.js"></script>
     
     <!-- Sweetalert2 -->
@@ -28,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var calendar = new FullCalendar.Calendar(calendarEl, {
     
-    initialView: 'dayGridMonth',
+    initialView: 'timeGridWeek',
     height: 650,
     events: 'fetchEvents.php',
     
@@ -157,6 +195,18 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
   });
+  
+  document.getElementById('btnMonth').addEventListener('click', function() {
+    calendar.changeView('dayGridMonth');
+  });
+
+  document.getElementById('btnWeek').addEventListener('click', function() {
+    calendar.changeView('timeGridWeek');
+  });
+
+  document.getElementById('btnDay').addEventListener('click', function() {
+    calendar.changeView('timeGridDay');
+  });
 
   calendar.render();
 });
@@ -168,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <nav class="navbar navbar-expand-lg navbar-light custom-navbar">
   <div class="container">
     <a class="navbar-brand mx-auto" href="#"><img src="img/logo.png" alt="Logo" class="img-fluid me-2" style="max-width: 50px;"></a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler btn-outline-orange" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
@@ -202,6 +252,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </nav>
 
 <!-- Contenido principal -->
+
 <section class="landing-page">
   <div class="overlay">
         <div class="content">
@@ -225,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <div class="col-md-12">
               <p>Ven a jugar chamuscas con tus amigos, <br>compañeros de trabajo, familia,<br>tenemos para todos</p>
-              <button class="btn btn-orange">Reservar</button>
+              <a href="/reserva.php"><button class="btn btn-orange" >Reservar</button></a>
             </div>
           </div>
         </div>
@@ -251,6 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 </section>
+</div>
 
 
   <section class="container mt-4" id="Servicio">
@@ -358,41 +410,41 @@ document.addEventListener('DOMContentLoaded', function() {
           <tbody>
             <tr>
               <td rowspan="3">Fútbol 5</td>
-              <td>8 am - 5 pm</td>
+              <td>8:00 am - 5:00 pm</td>
               <td>Q150</td>
             </tr>
             <tr>
-              <td>6 pm - 10 pm</td>
+              <td>6:00 pm - 10:00 pm</td>
               <td>Q200</td>
             </tr>
             <tr>
-              <td>11 pm en adelante</td>
+              <td>11:00 pm en adelante</td>
               <td>Q250</td>
             </tr>
             <tr>
               <td rowspan="3">Fútbol 7</td>
-              <td>8 am - 5 pm</td>
+              <td>8:00 am - 5:00 pm</td>
               <td>Q250</td>
             </tr>
             <tr>
-              <td>6 pm - 10 pm</td>
+              <td>6:00 pm - 10:00 pm</td>
               <td>Q300</td>
             </tr>
             <tr>
-              <td>11 pm en adelante</td>
+              <td>11:00 pm en adelante</td>
               <td>Q350</td>
             </tr>
             <tr>
               <td rowspan="3">Canchas de Tenis</td>
-              <td>8 am - 5 pm</td>
+              <td>8:00 am - 5:00 pm</td>
               <td>Q200</td>
             </tr>
             <tr>
-              <td>6 pm - 10 pm</td>
+              <td>6:00 pm - 10:00 pm</td>
               <td>Q250</td>
             </tr>
             <tr>
-              <td>11 pm en adelante</td>
+              <td>11:00 pm en adelante</td>
               <td>Q300</td>
             </tr>
           </tbody>
@@ -408,28 +460,78 @@ document.addEventListener('DOMContentLoaded', function() {
         Dirección de la empresa pendiente<br>
         De definir para cambiar el texto
       </address>
+      
       <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15441.52393350407!2d-90.60031!3d14.634302!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8589a1c3f811f07b%3A0x68c91e766bb665f7!2sCanchas%20San%20Miguel%20Tinco!5e0!3m2!1ses-419!2sgt!4v1692423899222!5m2!1ses-419!2sgt" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
     </div>
   </section>
   <section class=" container my-5">
   <div class="row" id="Disponibilidad">
     <div class="col-lg-12">
-        <h1 class="text-orange">DISPONIBILIDAD</h1>
-        <iframe src="https://calendar.google.com/calendar/embed?height=600&wkst=1&bgcolor=%23616161&ctz=America%2FGuatemala&mode=WEEK&title=Canchas&src=a2V2aW4uY2FodWVzQGdtYWlsLmNvbQ&color=%23039BE5" style="border:solid 1px #777" width="100%" height="600" frameborder="0" scrolling="no"></iframe>
+        <h1 class="text-orange">DISPONIBILIDAD</h1> 
+        <iframe src="https://calendar.google.com/calendar/embed?height=600&wkst=1&bgcolor=%23616161&ctz=America%2FGuatemala&mode=WEEK&src=a2V2aW4uY2FodWVzQGdtYWlsLmNvbQ&color=%23F4511E" style="border:solid 1px #777" width="100%" height="600" frameborder="0" scrolling="no"></iframe>
           
     </div>
   </div>
 </section>
-<section class="container my-5" >
-  <div id="calendar" class="text-orange"></div>
-</section>
-<!-- Scripts de Bootstrap (requieren jQuery) -->
+<!--<section class="container my-5" >
+<div>
+         Barra de navegación con botones personalizados 
+        <button id="btnMonth" class="dark-button">Mes</button>
+        <button id="btnWeek" class="dark-button">Semana</button>
+        <button id="btnDay" class="dark-button">Día</button>
+    </div>  
+<div id="calendar" class="text-orange">
+  </div>
+  
 
+</section>-->
+<!-- Scripts de Bootstrap (requieren jQuery) -->
+<div class="whatsapp_chat_support wcs_fixed_left" id="button-w">
+      
+    <div class="wcs_button wcs_button_circle">
+        <span class="fa fa-whatsapp"></span>
+    </div>
+    <div class="wcs_button_label">
+            Contáctanos
+        </div>  
+ 
+    <div class="wcs_popup">
+        <div class="wcs_popup_close">
+            <span class="fa fa-close"></span>
+        </div>
+        <div class="wcs_popup_header">
+            <span class="fa fa-whatsapp"></span>
+            <strong>Servicio al cliente</strong>
+            
+            <div class="wcs_popup_header_description">¿Necesitas ayuda? Chatea con nosotros en Whatsapp</div>
+
+        </div>  
+        <div class="wcs_popup_input" 
+            data-number="50254205249"
+            data-availability='{ "monday":"08:00-22:00", "tuesday":"08:00-22:00", "wednesday":"08:00-22:00", "thursday":"08:00-22:00", "friday":"08:00-22:00", "saturday":"07:00-22:00", "sunday":"08:00-22:00" }'>
+            <input type="text" placeholder="Escribir pregunta!" />
+            <i class="fa fa-play"></i>
+        </div>
+        <div class="wcs_popup_avatar">
+            <img src="/img/logo.png" alt="">
+        </div>
+    </div>
+</div>
 <button id="btnSubir" class="btn btn-custom btn-floating btn-back-to-top"><i class="fas fa-arrow-up"></i></button>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="plugin/components/jQuery/jquery-1.11.3.min.js"></script>
+<script src="plugin/components/moment/moment.min.js"></script>
+<script src="plugin/components/moment/moment-timezone-with-data.min.js"></script> <!-- spanish language (es) -->
+
+<script src="plugin/whatsapp-chat-support.js"></script>
+<script>
+   $('#button-w').whatsappChatSupport({
+        defaultMsg : '',
+    });
+</script>
 <script src="js/script.js"></script>
 </body>
 <footer class="footer bg-dark text-white py-4">

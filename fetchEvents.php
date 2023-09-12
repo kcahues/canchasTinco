@@ -4,8 +4,8 @@ require_once 'dbConfig.php';
 
 // Filter events by calendar date
 $where_sql = '';
-if(!empty($_GET['start']) && !empty($_GET['end'])){
-    $where_sql .= " WHERE start BETWEEN '".$_GET['start']."' AND '".$_GET['end']."' ";
+if(!empty($_GET['date'])){
+    $where_sql .= " WHERE date BETWEEN '".$_GET['date']."' AND '".$_GET['date']."' ";
 }
 
 // Fetch events from database
