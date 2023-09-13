@@ -165,10 +165,6 @@ $conexion->close();
                         <option value="23">23:00</option>
                     </select>
                 </div>
-                <div class="col" type="hidden">
-                    <label for="hora_fin" class="form-label">Hora de Fin</label>
-                    <input type="time" class="form-control" id="hora_fin" step="3600">
-                </div>
             </div>
             <div class="mb-3">
                 <label for="fecha" class="form-label">Fecha</label>
@@ -177,6 +173,10 @@ $conexion->close();
             <div class="mb-3">
                 <label for="email" class="form-label">Correo Electrónico</label>
                 <input type="email" class="form-control" id="email" placeholder="Escribe tu correo">
+            </div>
+            <div class="mb-3">
+                <label for="telefono" class="form-label">Numero de telefono</label>
+                <input type="phone" class="form-control" id="telefono" placeholder="Escribe tu telefono">
             </div>
             <div class="mb-3">
                 <label for="tipoCancha" class="form-label">Tipo de Cancha</label>

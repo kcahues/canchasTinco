@@ -2,11 +2,11 @@
 // Verificar si la solicitud es una solicitud POST
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Recupera los datos enviados por AJAX
-    $idRol = $_POST["idTipoCancha"];
+    $idTipoCancha = $_POST["idTipoCancha"];
     $nuevaDescripcion = $_POST["nuevaDescripcion"];
 
     // Realiza la validación de datos (puedes agregar más validaciones según tus necesidades)
-    if (empty($idRol) || empty($nuevaDescripcion)) {
+    if (empty($idTipoCancha) || empty($nuevaDescripcion)) {
         echo "error"; // Envía una respuesta de error si los datos están incompletos
         exit();
     }
@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Prepara y ejecuta la consulta para actualizar el rol
     $consulta = "UPDATE tipocancha SET descripcion = ? WHERE idTipoCancha = ?";
     $stmt = $conexion->prepare($consulta);
-    $stmt->bind_param("si", $nuevaDescripcion, $idRol);
+    $stmt->bind_param("si", $nuevaDescripcion, $idTipoCancha);
 
     if ($stmt->execute()) {
         echo "success"; // La actualización se realizó con éxito

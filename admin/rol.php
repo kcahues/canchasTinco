@@ -204,12 +204,18 @@ $resultados = $conexion->query($consulta);
         <td><?php echo $fila["idRol"]; ?></td>
         <td><?php echo $fila["descripcion"]; ?></td>
         <td>
+        <?php
+        
+        if ($fila["idRol"] !== "1") {
+      ?>
         <button class="btn btn-info btn-modificar" data-id="<?php echo $fila["idRol"]; ?>" data-descripcion="<?php echo $fila["descripcion"]; ?>">Modificar</button>
+        
         <button class="btn btn-danger btn-eliminar" data-id="<?php echo $fila["idRol"]; ?>">Eliminar</button>
             <!-- <button class="btn btn-info btn-modificar" data-id="<?php echo $fila["idRol"]; ?>" data-descripcion="<?php echo $fila["descripcion"]; ?>">Modificar</button>
                 Agregamos un botón "Modificar" con atributos de datos para el ID y descripción del rol -->
-        </td>
-
+                <?php }?>
+            </td>
+        
     </tr>
     </tr>
     <?php endwhile; 

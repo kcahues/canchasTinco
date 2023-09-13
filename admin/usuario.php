@@ -10,7 +10,6 @@ if (!isset($_SESSION["idUsuario"])) {
 
 // Conexión a la base de datos
 $conexion = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
-
 // Verificación de la conexión
 if ($conexion->connect_error) {
     die("Error de conexión: " . $conexion->connect_error);
@@ -29,14 +28,14 @@ $stmt = null;
 // Procesamiento de la búsqueda
 if (isset($_GET["filtro"])) {
     $filtro = "%" . $_GET["filtro"] . "%";
-    $consulta = "SELECT * FROM cancha WHERE descripcion LIKE ? ORDER BY idCancha ASC";
+    $consulta = "SELECT * FROM usuario WHERE nombre LIKE ? ORDER BY idUsuario ASC";
     $stmt = $conexion->prepare($consulta);
     $stmt->bind_param("s", $filtro);
     $stmt->execute();
     $resultados = $stmt->get_result();
 
     // Consulta para contar el número total de registros después de la búsqueda
-    $totalRegistrosConsulta = "SELECT COUNT(*) as total FROM cancha WHERE descripcion LIKE ?";
+    $totalRegistrosConsulta = "SELECT COUNT(*) as total FROM usuario WHERE nombre LIKE ?";
     $stmtTotal = $conexion->prepare($totalRegistrosConsulta);
     $stmtTotal->bind_param("s", $filtro);
     $stmtTotal->execute();
@@ -44,11 +43,11 @@ if (isset($_GET["filtro"])) {
     $totalRegistros = $totalRegistrosResultado->fetch_assoc()['total'];
 } else {
     // Consulta sin filtro de búsqueda
-    $consulta = "SELECT * FROM cancha ORDER BY idCancha ASC LIMIT $registrosPorPagina OFFSET $offset";
+    $consulta = "SELECT * FROM usuario ORDER BY idUsuario ASC LIMIT $registrosPorPagina OFFSET $offset";
     $resultados = $conexion->query($consulta);
 
     // Consulta para contar el número total de registros sin filtro
-    $totalRegistrosConsulta = "SELECT COUNT(*) as total FROM cancha";
+    $totalRegistrosConsulta = "SELECT COUNT(*) as total FROM usuario";
     $totalRegistrosResultado = $conexion->query($totalRegistrosConsulta);
     $totalRegistros = $totalRegistrosResultado->fetch_assoc()['total'];
 }
@@ -62,7 +61,7 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canchas</title>
+    <title>Gestión de usuarios</title>
     <!-- Incluir los estilos de Bootstrap -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -76,6 +75,23 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 <!-- Include FullCalendar JS & CSS library -->
 <link href="/js/fullcalendar/lib/main.css" rel="stylesheet" />
 <script src="/js/fullcalendar/lib/main.js"></script>
+<script>
+        // Función para verificar si las contraseñas coinciden
+        function verificarContraseñas() {
+            var contraseña1 = document.getElementById("password1").value;
+            var contraseña2 = document.getElementById("password2").value;
+
+            var mensaje = document.getElementById("mensaje");
+
+            if (contraseña1 === contraseña2) {
+                mensaje.innerHTML = "Las contraseñas coinciden.";
+                mensaje.style.color = "green";
+            } else {
+                mensaje.innerHTML = "Las contraseñas no coinciden.";
+                mensaje.style.color = "red";
+            }
+        }
+    </script>
 </head>
 <body>
     <!-- Barra de navegación -->
@@ -104,11 +120,12 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
           <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
             
             <a class="dropdown-item" href="rol.php">Roles</a>
-            <a class="dropdown-item" href="tipo_cancha.php">Tipo de canchas</a>
+            <a class="dropdown-item" href="tipo_usuario.php">Tipo de usuarios</a>
             <a class="dropdown-item" href="tipo_anticipo.php">Tipo de anticipos</a>
-            <a class="dropdown-item" href="cancha.php">Cancha</a>
+            <a class="dropdown-item" href="usuario.php">Cancha</a>
             <a class="dropdown-item" href="tarifa.php">Tarifa</a>
             <a class="dropdown-item" href="estado_reserva.php">Estado Reserva</a>
+            <a class="dropdown-item" href="usuario.php">Usuarios</a>
           </div>
         </li>
         <?php }?>
@@ -125,7 +142,7 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 
 <div class="row">
   <div class="col-md-12">
-<h1 class="mb-4 text-orange ">Canchas</h1>
+<h1 class="mb-4 text-orange ">Usuarios</h1>
   </div>
 </div>
 <!-- Formulario de búsqueda -->
@@ -146,13 +163,13 @@ $stmt = null;
 // Procesamiento de la búsqueda
 if (isset($_GET["filtro"])) {
 $filtro = "%" . $_GET["filtro"] . "%";
-$consulta = "SELECT * FROM cancha WHERE descripcion LIKE ? ORDER BY idCancha ASC";
+$consulta = "SELECT * FROM usuario WHERE nombre LIKE ? ORDER BY idUsuario ASC";
 $stmt = $conexion->prepare($consulta);
 $stmt->bind_param("s", $filtro);
 $stmt->execute();
 $resultados = $stmt->get_result();
 } else {
-$consulta = "SELECT * FROM cancha ORDER BY idCancha ASC LIMIT $registrosPorPagina OFFSET $offset";
+$consulta = "SELECT * FROM usuario ORDER BY idUsuario ASC LIMIT $registrosPorPagina OFFSET $offset";
 $resultados = $conexion->query($consulta);
 
 }
@@ -193,10 +210,12 @@ $resultados = $conexion->query($consulta);
 <table class="table table-striped table-dark" >
 <thead>
     <tr>
-        <th>ID Cancha</th>
-        <th>Tipo Cancha</th>
+        <th>ID Usuario</th>
+        <th>Rol</th>
         <th>Nombre</th>
-        <th>Descripcion</th>
+        <th>Apellido</th>
+        <th>Telefono</th>
+        <th>Correo Electronico</th>
         <th>Acciones</th>
         
     </tr>
@@ -204,45 +223,51 @@ $resultados = $conexion->query($consulta);
 <tbody>
     <?php while ($fila = $resultados->fetch_assoc()): ?>
     <tr>
-        <td><?php echo $fila["idCancha"]; ?></td>
+        <td><?php echo $fila["idUsuario"]; ?></td>
         <td>
             <?php 
-                $tcancha = $fila["idTipoCancha"];
-                $idtc = $tcancha;
-                $consultaTiposCancha1 = "SELECT * FROM tipocancha where idTipoCancha = $tcancha";
+                $tusuario = $fila["idRol"];
+                $idtc = $tusuario;
+                $consultaTiposCancha1 = "SELECT * FROM rol where idRol = $tusuario";
                 $resultadosTiposCancha1 = $conexion->query($consultaTiposCancha1);
                 while ($filaTipoCancha1 = $resultadosTiposCancha1->fetch_assoc()) {
-                    $idTipoCancha1 = $filaTipoCancha1["idTipoCancha"];
+                    $idRol1 = $filaTipoCancha1["idRol"];
                     $descripcionTipoCancha1 = $filaTipoCancha1["descripcion"];
-                    //echo "<option value='$idTipoCancha'>$descripcionTipoCancha</option>";
+                    //echo "<option value='$idRol'>$descripcionTipoCancha</option>";
                 }
                 echo $descripcionTipoCancha1;
             ?>
  <!--   <select type="hidden"class="form-control" id="tipoCanchaSelect" name="tipoCancha">
         <?php
-        // Consulta para obtener los valores de la tabla tipocancha
-        $consultaTiposCancha = "SELECT * FROM tipocancha";
+        // Consulta para obtener los valores de la tabla rol
+        $consultaTiposCancha = "SELECT * FROM rol";
         $resultadosTiposCancha = $conexion->query($consultaTiposCancha);
 
         while ($filaTipoCancha = $resultadosTiposCancha->fetch_assoc()) {
-            $idTipoCancha = $filaTipoCancha["idTipoCancha"];
+            $idRol = $filaTipoCancha["idRol"];
             $descripcionTipoCancha = $filaTipoCancha["descripcion"];
-            echo "<option value='$idTipoCancha'>$descripcionTipoCancha</option>";
+            echo "<option value='$idRol'>$descripcionTipoCancha</option>";
         }
         ?>
     </select> !-->
 </td>
-<input type="hidden" id="idTipoCanchaSeleccionado" name="idTipoCanchaSeleccionado">
+<input type="hidden" id="idRolSeleccionado" name="idRolSeleccionado">
 
 <td><?php echo $fila["nombre"]; ?></td>
-        <td><?php echo $fila["descripcion"]; ?></td>
+<td><?php echo $fila["apellido"]; ?></td>
+<td><?php echo $fila["telefono"]; ?></td>
+<td><?php echo $fila["correoElectronico"]; ?></td>
+
         <td>
-        <button class="btn btn-info btn-modificar" data-id="<?php echo $fila["idCancha"]; ?>" 
-        data-idTipoCancha="<?php echo $fila["idTipoCancha"]; ?>"
+        <button class="btn btn-info btn-modificar" data-id="<?php echo $fila["idUsuario"]; ?>" 
+        
         data-nombre="<?php echo $fila["nombre"]; ?>"
-        data-descripcion="<?php echo $fila["descripcion"]; ?>">Modificar</button>
-        <button class="btn btn-danger btn-eliminar" data-id="<?php echo $fila["idCancha"]; ?>">Eliminar</button>
-            <!-- <button class="btn btn-info btn-modificar" data-id="<?php echo $fila["idCancha"]; ?>" data-descripcion="<?php echo $fila["descripcion"]; ?>">Modificar</button>
+        data-apellido="<?php echo $fila["apellido"]; ?>"
+        data-telefono="<?php echo $fila["telefono"]; ?>"
+        data-correo="<?php echo $fila["correoElectronico"]; ?>"
+        data-rol="<?php echo $fila["idRol"]; ?>" ?>Modificar</button>
+        <button class="btn btn-danger btn-eliminar" data-id="<?php echo $fila["idUsuario"]; ?>">Eliminar</button>
+            <!-- <button class="btn btn-info btn-modificar" data-id="<?php echo $fila["idUsuario"]; ?>" data-descripcion="<?php echo $fila["descripcion"]; ?>">Modificar</button>
                 Agregamos un botón "Modificar" con atributos de datos para el ID y descripción del rol -->
         </td>
 
@@ -264,13 +289,69 @@ $resultados = $conexion->query($consulta);
 
 <div class="row">
     <div class="col-md-12">
-        <h2 class="mb-4 text-orange">Crear Nueva cancha</h2>
+        <h2 class="mb-4 text-orange">Crear Nuevo usuario</h2>
         <form id="form-crear-rol">
-            <div class="form-group">
-                <label for="descripcion">Descripción de la cancha</label>
+          <!--  <div class="form-group">
+                <label for="descripcion">Descripción de la usuario</label>
                 <input type="text" class="form-control" id="descripcion" name="descripcion" required>
+            </div> -->
+            <div class="form-group">
+                <label for="rol">Rol</label>
+                <select class="form-control" id="idRol" name="idRol">
+                    <?php
+                    // Conexión a la base de datos
+                    //$conexion = new mysqli("localhost", "usuario", "contraseña", "nombre_base_de_datos");
+                    $conexion = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
+                    // Verificación de la conexión
+                    if ($conexion->connect_error) {
+                        die("Error de conexión: " . $conexion->connect_error);
+                    }
+
+                    // Consulta para obtener los roles desde la tabla "rol"
+                    $consultaRoles = "SELECT idRol, descripcion FROM rol";
+                    $resultadosRoles = $conexion->query($consultaRoles);
+
+                    // Iterar a través de los resultados y crear opciones para el select
+                    while ($filaRol = $resultadosRoles->fetch_assoc()) {
+                        $idRol = $filaRol["idRol"];
+                        $descripcionRol = $filaRol["descripcion"];
+                        echo "<option value='$idRol'>$descripcionRol</option>";
+                    }
+
+                    // Cerrar la conexión a la base de datos
+                    $conexion->close();
+                    ?>
+                </select>
             </div>
-            <button type="submit" class="btn btn-primary">Crear Tipo de cancha</button>
+            <div class="form-group">
+                <label for="nombre">Nombre</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="apellido">Apellido</label>
+                <input type="text" class="form-control" id="apellido" name="apellido" required>
+            </div>
+            <div class="form-group">
+                <label for="correoElectronico">Correo Electronico</label>
+                <input type="text" class="form-control" id="correoElectronico" name="correoElectronico" required>
+            </div>  
+            <div class="form-group">
+                <label for="telefono">Telefono</label>
+                <input type="text" class="form-control" id="telefono" name="telefono" required>
+            </div>
+            <div class="form-group">
+            
+            <label for="password1">Contraseña:</label>
+            <input type="password" id="password1" class="form-control" name="password1" required>
+            
+                    
+            <label for="password2">Confirmar Contraseña:</label>
+            <input type="password" id="password2" class="form-control" name="password2" required onkeyup="verificarContraseñas()">
+            <p id="mensaje"></p>
+        </div>
+        
+            
+            <button type="submit" class="btn btn-primary btn-orange">Crear usuario</button>
         </form>
     </div>
 </div>
@@ -301,15 +382,15 @@ $resultados = $conexion->query($consulta);
 
 // Script para manejar el clic en el botón "Modificar"
 /*$(document).on('click', '.btn-modificar', function () {
-    const idCancha = $(this).data('id');
-    const idTipoCancha = $(this).data('idTipoCancha');
+    const idUsuario = $(this).data('id');
+    const idRol = $(this).data('idRol');
     const nombreActual = $(this).data('nombre');
     const descripcionActual = $(this).data('descripcion');
     
     Swal.fire({
         title: 'Modificar Cancha',
-        html: `<input id="swal-input1" class="swal2-input" value="${idCancha}" readonly>
-               <input id="swal-input2" class="swal2-input" value="${idTipoCancha}" placeholder="Nuevo Tipo de Cancha">
+        html: `<input id="swal-input1" class="swal2-input" value="${idUsuario}" readonly>
+               <input id="swal-input2" class="swal2-input" value="${idRol}" placeholder="Nuevo Tipo de Cancha">
                <input id="swal-input3" class="swal2-input" value="${nombreActual}" placeholder="Nuevo Nombre">
                <input id="swal-input4" class="swal2-input" value="${descripcionActual}" placeholder="Nueva Descripción">`,
         confirmButtonText: 'Guardar Cambios',
@@ -326,8 +407,8 @@ $resultados = $conexion->query($consulta);
             const nuevaDescripcion = result.value.nuevaDescripcion;
             $.ajax({
                 type: 'POST',
-                url: 'ruta_para_modificar_cancha.php', // Reemplaza con la URL correcta en tu proyecto
-                data: { idCancha: idCancha, nuevoIdTipoCancha: nuevoIdTipoCancha, nuevoNombre: nuevoNombre, nuevaDescripcion: nuevaDescripcion },
+                url: 'ruta_para_modificar_usuario.php', // Reemplaza con la URL correcta en tu proyecto
+                data: { idUsuario: idUsuario, nuevoIdTipoCancha: nuevoIdTipoCancha, nuevoNombre: nuevoNombre, nuevaDescripcion: nuevaDescripcion },
                 success: function (response) {
                     if (response === 'success') {
                         Swal.fire('Éxito', 'La Cancha se ha modificado correctamente', 'success').then(() => {
@@ -349,39 +430,47 @@ $resultados = $conexion->query($consulta);
 
 var valorJS = <?php echo json_encode($idtc); ?>;
 $(document).on('click', '.btn-modificar', function () {
-    const idCancha = $(this).data('id');
+    const idUsuario = $(this).data('id');
     const nombreActual = $(this).data('nombre');
-    const descripcionActual = $(this).data('descripcion');
-    const idTipoCanchaActual = $(this).data('idTipoCancha'); // Obtener el ID actual
+    const apellidoActual = $(this).data('apellido');
+    const telefonoActual = $(this).data('telefono');
+    const correoElectronicoActual = $(this).data('correo');
+    const idRolActual = $(this).data('rol'); // Obtener el ID actual
 
     //var valorJS = <?php echo json_encode($descripcionTipoCancha1); ?>;
     console.log(valorJS);
-
+    console.log(correoElectronicoActual);
     Swal.fire({
-        title: 'Modificar Cancha',
-        html: `<input id="swal-input1" class="swal2-input" value="${idCancha}" readonly>
+        title: 'Modificar Usuario',
+        html: `<input id="swal-input1" class="swal2-input" value="${idUsuario}" readonly>
                <input id="swal-input2" class="swal2-input" value="${nombreActual}" placeholder="Nuevo Nombre">
-               <input id="swal-input3" class="swal2-input" value="${descripcionActual}" placeholder="Nueva Descripción">
+               <input id="swal-input3" class="swal2-input" value="${apellidoActual}" placeholder="Nuevo Apellido">
+               <input id="swal-input4" class="swal2-input" value="${telefonoActual}" placeholder="Nuevo Telefono">
+               <input id="swal-input5" class="swal2-input" value="${correoElectronicoActual}" placeholder="Nuevo Correo">
                <select class="form-control" id="tipoCanchaSelectSwal"></select>`,
                //<select class="form-control" id="tipoCanchaSelectSwal" value=""></select>`, // Agregar el menú desplegable
         confirmButtonText: 'Guardar Cambios',
         preConfirm: () => {
             const nuevoNombre = Swal.getPopup().querySelector('#swal-input2').value;
-            const nuevaDescripcion = Swal.getPopup().querySelector('#swal-input3').value;
+            const nuevoApellido = Swal.getPopup().querySelector('#swal-input3').value;
+            const nuevoTelefono = Swal.getPopup().querySelector('#swal-input4').value;
+            const nuevoCorreoElectronico = Swal.getPopup().querySelector('#swal-input5').value;
             const nuevoIdTipoCancha = $('#tipoCanchaSelectSwal').val(); // Obtener el valor seleccionado
-            $('#idTipoCanchaSeleccionado').val(nuevoIdTipoCancha); // Actualizar el campo oculto
-            return { nuevoNombre: nuevoNombre.trim(), nuevaDescripcion: nuevaDescripcion.trim() }
+            $('#idRolSeleccionado').val(nuevoIdTipoCancha); // Actualizar el campo oculto
+            return { nuevoNombre: nuevoNombre.trim(), nuevoApellido: nuevoApellido.trim(),
+                     nuevoTelefono: nuevoTelefono.trim(), nuevoCorreoElectronico: nuevoCorreoElectronico.trim(),
+                     nuevoidRol: nuevoIdTipoCancha.trim() }
         },
         onOpen: () => {
             // Cargar las opciones del menú desplegable en SweetAlert2
             $.ajax({
                 type: 'GET',
-                url: '/admin/tipos_cancha.php', // Reemplaza con la URL correcta en tu proyecto
+                url: '/admin/tipos_rol.php', // Reemplaza con la URL correcta en tu proyecto
                 success: function (response) {
                     $('#tipoCanchaSelectSwal').html(response);
-                    //$('#tipoCanchaSelectSwal').val(idTipoCanchaActual); // Establecer el valor actual
-                    $('#tipoCanchaSelectSwal').val(valorJS);
-                    //$('#tipoCanchaSelectSwal option[value="' + idTipoCanchaActual + '"]').prop('selected', true);
+                    //$('#tipoCanchaSelectSwal').val(idRolActual); // Establecer el valor actual
+                    $('#tipoCanchaSelectSwal').val(idRolActual);
+                    //$('#tipoCanchaSelectSwal option[value="' + idRolActual + '"]').prop('selected', true);
 
                 },
                 error: function () {
@@ -392,19 +481,23 @@ $(document).on('click', '.btn-modificar', function () {
     }).then((result) => {
         if (result.isConfirmed) {
             const nuevoNombre = result.value.nuevoNombre;
-            const nuevaDescripcion = result.value.nuevaDescripcion;
-            const nuevoIdTipoCancha = $('#idTipoCanchaSeleccionado').val(); // Obtener el valor del campo oculto
+            const nuevoApellido = result.value.nuevoApellido;
+            const nuevoCorreoElectronico = result.value.nuevoCorreoElectronico;
+            const nuevoTelefono = result.value.nuevoTelefono;
+           // const nuevoidRol = result.value.nuevoidRol;
+            //const nuevaDescripcion = result.value.nuevaDescripcion;
+            const nuevoIdTipoCancha = $('#idRolSeleccionado').val(); // Obtener el valor del campo oculto
             $.ajax({
                 type: 'POST',
-                url: '/admin/mantenimientos/modificar_cancha.php', // Reemplaza con la URL correcta en tu proyecto
-                data: { idCancha: idCancha, nuevoNombre: nuevoNombre, nuevaDescripcion: nuevaDescripcion, nuevoIdTipoCancha: nuevoIdTipoCancha },
+                url: '/admin/mantenimientos/modificar_usuario.php', // Reemplaza con la URL correcta en tu proyecto
+                data: { idUsuario: idUsuario, nuevoNombre: nuevoNombre, nuevoApellido: nuevoApellido, nuevoCorreoElectronico: nuevoCorreoElectronico, nuevoTelefono: nuevoTelefono, nuevoIdTipoCancha: nuevoIdTipoCancha },
                 success: function (response) {
                     if (response === 'success') {
-                        Swal.fire('Éxito', 'La Cancha se ha modificado correctamente', 'success').then(() => {
+                        Swal.fire('Éxito', 'El usuari se ha modificado correctamente', 'success').then(() => {
                             window.location.reload();
                         });
                     } else {
-                        Swal.fire('Error', 'Hubo un problema al modificar la Cancha', 'error');
+                        Swal.fire('Error', 'Hubo un problema al modificar el Usuario', 'error');
                     }
                 },
                 error: function () {
@@ -418,7 +511,7 @@ $(document).on('click', '.btn-modificar', function () {
 
 // Script para manejar el clic en el botón "Eliminar"
 $(document).on('click', '.btn-eliminar', function () {
-    const idCancha = $(this).data('id');
+    const idUsuario = $(this).data('id');
 
     // Mostrar un SweetAlert de confirmación
     Swal.fire({
@@ -434,15 +527,15 @@ $(document).on('click', '.btn-eliminar', function () {
             // El usuario confirmó, enviar solicitud AJAX para eliminar el registro
             $.ajax({
                 type: 'POST',
-                url: 'ruta_para_eliminar_cancha.php', // Reemplaza con la URL correcta en tu proyecto
-                data: { idCancha: idCancha },
+                url: '/admin/mantenimientos/eliminar_usuario.php', // Reemplaza con la URL correcta en tu proyecto
+                data: { idUsuario: idUsuario },
                 success: function (response) {
                     if (response === 'success') {
-                        Swal.fire('¡Eliminado!', 'La Cancha ha sido eliminada.', 'success').then(() => {
+                        Swal.fire('¡Eliminado!', 'El usuario ha sido eliminada.', 'success').then(() => {
                             window.location.reload();
                         });
                     } else {
-                        Swal.fire('Error', 'Hubo un problema al eliminar la Cancha', 'error');
+                        Swal.fire('Error', 'Hubo un problema al eliminar el usuario', 'error');
                     }
                 },
                 error: function () {
@@ -459,22 +552,27 @@ $(document).on('click', '.btn-eliminar', function () {
         // Manejar el envío del formulario de creación de rol
         $('#form-crear-rol').submit(function (e) {
             e.preventDefault();
-
-            const descripcion = $('#descripcion').val();
+            const idRol = $('#idRol').val();
+            const nombre = $('#nombre').val();
+            const apellido = $('#apellido').val();
+            const correoElectronico = $('#correoElectronico').val();
+            const telefono = $('#telefono').val();
+            const contrasenia = $('#password1').val();
 
             // Enviar la solicitud de creación a través de AJAX
             $.ajax({
                 type: 'POST',
-                url: '/admin/mantenimientos/crear_tipocancha.php', // Reemplaza con la URL correcta en tu proyecto
-                data: { descripcion: descripcion },
+                url: '/admin/mantenimientos/crear_usuario.php', // Reemplaza con la URL correcta en tu proyecto
+                data: { idRol: idRol, nombre: nombre, apellido: apellido, correoElectronico: correoElectronico,
+                        telefono: telefono, contrasenia: contrasenia },
                 success: function (response) {
                     if (response === 'success') {
-                        Swal.fire('Éxito', 'El tipo de cancha se ha creado correctamente', 'success').then(() => {
+                        Swal.fire('Éxito', 'El tipo de usuario se ha creado correctamente', 'success').then(() => {
                             // Recargar la página o realizar alguna otra acción después de crear el rol
                             window.location.reload();
                         });
                     } else {
-                        Swal.fire('Error', 'Hubo un problema al crear el tipo de cancha', 'error');
+                        Swal.fire('Error', 'Hubo un problema al crear el tipo de usuario', 'error');
                     }
                 },
                 error: function () {
