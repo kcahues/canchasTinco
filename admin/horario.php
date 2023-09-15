@@ -1,6 +1,7 @@
 <?php
 session_start();
-
+$descripcionTipoCancha1 = "";
+$idtc = "";
 // Verificar si el usuario ha iniciado sesión
 if (!isset($_SESSION["idUsuario"])) {
     header("Location: login.php"); // Redirigir a la página de inicio de sesión si no ha iniciado sesión
@@ -9,7 +10,6 @@ if (!isset($_SESSION["idUsuario"])) {
 
 // Conexión a la base de datos
 $conexion = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
-
 
 // Verificación de la conexión
 if ($conexion->connect_error) {
@@ -29,26 +29,26 @@ $stmt = null;
 // Procesamiento de la búsqueda
 if (isset($_GET["filtro"])) {
     $filtro = "%" . $_GET["filtro"] . "%";
-    $consulta = "SELECT * FROM rol WHERE descripcion LIKE ? ORDER BY idRol ASC";
+    $consulta = "SELECT * FROM horario WHERE idHorario LIKE ? ORDER BY idHorario ASC";
     $stmt = $conexion->prepare($consulta);
-    $stmt->bind_param("s", $filtro);
+    $stmt->bind_param("i", $filtro);
     $stmt->execute();
     $resultados = $stmt->get_result();
 
     // Consulta para contar el número total de registros después de la búsqueda
-    $totalRegistrosConsulta = "SELECT COUNT(*) as total FROM rol WHERE descripcion LIKE ?";
+    $totalRegistrosConsulta = "SELECT COUNT(*) as total FROM horario WHERE idHorario LIKE ?";
     $stmtTotal = $conexion->prepare($totalRegistrosConsulta);
-    $stmtTotal->bind_param("s", $filtro);
+    $stmtTotal->bind_param("i", $filtro);
     $stmtTotal->execute();
     $totalRegistrosResultado = $stmtTotal->get_result();
     $totalRegistros = $totalRegistrosResultado->fetch_assoc()['total'];
 } else {
     // Consulta sin filtro de búsqueda
-    $consulta = "SELECT * FROM rol ORDER BY idRol ASC LIMIT $registrosPorPagina OFFSET $offset";
+    $consulta = "SELECT * FROM horario ORDER BY idHorario ASC LIMIT $registrosPorPagina OFFSET $offset";
     $resultados = $conexion->query($consulta);
 
     // Consulta para contar el número total de registros sin filtro
-    $totalRegistrosConsulta = "SELECT COUNT(*) as total FROM rol";
+    $totalRegistrosConsulta = "SELECT COUNT(*) as total FROM horario";
     $totalRegistrosResultado = $conexion->query($totalRegistrosConsulta);
     $totalRegistros = $totalRegistrosResultado->fetch_assoc()['total'];
 }
@@ -62,7 +62,7 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roles</title>
+    <title>Horarios</title>
     <!-- Incluir los estilos de Bootstrap -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -120,11 +120,12 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
   </div>
 </nav>
 
+
     <section class="container my-5 " >
 
 <div class="row">
   <div class="col-md-12">
-<h1 class="mb-4 text-orange ">Roles</h1>
+<h1 class="mb-4 text-orange ">Horarios</h1>
   </div>
 </div>
 <!-- Formulario de búsqueda -->
@@ -145,13 +146,13 @@ $stmt = null;
 // Procesamiento de la búsqueda
 if (isset($_GET["filtro"])) {
 $filtro = "%" . $_GET["filtro"] . "%";
-$consulta = "SELECT * FROM rol WHERE descripcion LIKE ? ORDER BY idRol ASC";
+$consulta = "SELECT * FROM horario WHERE idHorario LIKE ? ORDER BY idHorario ASC";
 $stmt = $conexion->prepare($consulta);
-$stmt->bind_param("s", $filtro);
+$stmt->bind_param("i", $filtro);
 $stmt->execute();
 $resultados = $stmt->get_result();
 } else {
-$consulta = "SELECT * FROM rol ORDER BY idRol ASC LIMIT $registrosPorPagina OFFSET $offset";
+$consulta = "SELECT * FROM horario ORDER BY idHorario ASC LIMIT $registrosPorPagina OFFSET $offset";
 $resultados = $conexion->query($consulta);
 
 }
@@ -192,8 +193,9 @@ $resultados = $conexion->query($consulta);
 <table class="table table-striped table-dark" >
 <thead>
     <tr>
-        <th>ID Rol</th>
-        <th>Descripción</th>
+        <th>ID Horario</th>
+        <th>Id Cancha</th>
+        <th>Id Tarifa</th>
         <th>Acciones</th>
         
     </tr>
@@ -201,12 +203,71 @@ $resultados = $conexion->query($consulta);
 <tbody>
     <?php while ($fila = $resultados->fetch_assoc()): ?>
     <tr>
-        <td><?php echo $fila["idRol"]; ?></td>
-        <td><?php echo $fila["descripcion"]; ?></td>
+        <td><?php echo $fila["idHorario"]; ?></td>
         <td>
-        <button class="btn btn-info btn-modificar" data-id="<?php echo $fila["idRol"]; ?>" data-descripcion="<?php echo $fila["descripcion"]; ?>">Modificar</button>
-        <button class="btn btn-danger btn-eliminar" data-id="<?php echo $fila["idRol"]; ?>">Eliminar</button>
-            <!-- <button class="btn btn-info btn-modificar" data-id="<?php echo $fila["idRol"]; ?>" data-descripcion="<?php echo $fila["descripcion"]; ?>">Modificar</button>
+            <?php 
+                $tcancha = $fila["idCancha"];
+                $idtc = $tcancha;
+                $consultaTiposCancha1 = "SELECT * FROM cancha where idCancha = $tcancha";
+                $resultadosTiposCancha1 = $conexion->query($consultaTiposCancha1);
+                while ($filaTipoCancha1 = $resultadosTiposCancha1->fetch_assoc()) {
+                    $idTipoCancha1 = $filaTipoCancha1["idCancha"];
+                    $descripcionTipoCancha1 = $filaTipoCancha1["descripcion"];
+                    //echo "<option value='$idTipoCancha'>$descripcionTipoCancha</option>";
+                }
+                echo $descripcionTipoCancha1;
+            ?>
+ <!--   <select type="hidden"class="form-control" id="tipoCanchaSelect" name="tipoCancha">
+        <?php
+        // Consulta para obtener los valores de la tabla tipocancha
+        $consultaTiposCancha = "SELECT * FROM cancha";
+        $resultadosTiposCancha = $conexion->query($consultaTiposCancha);
+
+        while ($filaTipoCancha = $resultadosTiposCancha->fetch_assoc()) {
+            $idTipoCancha = $filaTipoCancha["idCancha"];
+            $descripcionTipoCancha = $filaTipoCancha["descripcion"];
+            echo "<option value='$idTipoCancha'>$descripcionTipoCancha</option>";
+        }
+        ?>
+    </select> !-->
+</td>
+<input type="hidden" id="idTipoCanchaSeleccionado" name="idTipoCanchaSeleccionado">
+
+<td>
+            <?php 
+                $tcancha2 = $fila["idTarifa"];
+                $idtc2 = $tcancha2;
+                $consultaTiposCancha12 = "SELECT * FROM tarifa where idTarifa = $tcancha2";
+                $resultadosTiposCancha12 = $conexion->query($consultaTiposCancha12);
+                while ($filaTipoCancha12 = $resultadosTiposCancha12->fetch_assoc()) {
+                    $idTipoCancha12 = $filaTipoCancha12["idTarifa"];
+                    $descripcionTipoCancha12 = $filaTipoCancha12["descripcion"];
+                    //echo "<option value='$idTipoCancha'>$descripcionTipoCancha</option>";
+                }
+                echo $descripcionTipoCancha12;
+            ?>
+ <!--   <select type="hidden"class="form-control" id="tipoCanchaSelect" name="tipoCancha">
+        <?php
+        // Consulta para obtener los valores de la tabla tipocancha
+        $consultaTiposCancha2 = "SELECT * FROM tarifa";
+        $resultadosTiposCancha2 = $conexion->query($consultaTiposCancha2);
+
+        while ($filaTipoCancha2 = $resultadosTiposCancha2->fetch_assoc()) {
+            $idTipoCancha2 = $filaTipoCancha2["idTarifa"];
+            $descripcionTipoCancha2 = $filaTipoCancha2["descripcion"];
+            echo "<option value='$idTipoCancha2'>$descripcionTipoCancha2</option>";
+        }
+        ?>
+    </select> !-->
+</td>
+<input type="hidden" id="idTipoCanchaSeleccionado2" name="idTipoCanchaSeleccionado2">
+
+        <td>
+        <button class="btn btn-info btn-modificar" data-id="<?php echo $fila["idHorario"]; ?>" 
+        data-idcancha="<?php echo $fila["idCancha"]; ?>"
+        data-idtarifa="<?php echo $fila["idTarifa"]; ?>">Modificar</button>
+        <button class="btn btn-danger btn-eliminar" data-id="<?php echo $fila["idHorario"]; ?>">Eliminar</button>
+            <!-- <button class="btn btn-info btn-modificar" data-id="<?php echo $fila["idCancha"]; ?>" data-descripcion="<?php echo $fila["descripcion"]; ?>">Modificar</button>
                 Agregamos un botón "Modificar" con atributos de datos para el ID y descripción del rol -->
         </td>
 
@@ -228,13 +289,65 @@ $resultados = $conexion->query($consulta);
 
 <div class="row">
     <div class="col-md-12">
-        <h2 class="mb-4 text-orange">Crear Nuevo Rol</h2>
+        <h2 class="mb-4 text-orange">Crear Nuevo horario</h2>
         <form id="form-crear-rol">
-            <div class="form-group">
-                <label for="descripcion">Descripción del Rol</label>
-                <input type="text" class="form-control" id="descripcion" name="descripcion" required>
+        <div class="form-group">
+                <label for="idCancha">Cancha</label>
+                <select class="form-control" id="idCancha" name="idCancha">
+                    <?php
+                    // Conexión a la base de datos
+                    //$conexion = new mysqli("localhost", "usuario", "contraseña", "nombre_base_de_datos");
+                    $conexion = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
+                    // Verificación de la conexión
+                    if ($conexion->connect_error) {
+                        die("Error de conexión: " . $conexion->connect_error);
+                    }
+
+                    // Consulta para obtener los roles desde la tabla "rol"
+                    $consultaRoles = "SELECT idCancha, descripcion FROM cancha";
+                    $resultadosRoles = $conexion->query($consultaRoles);
+
+                    // Iterar a través de los resultados y crear opciones para el select
+                    while ($filaRol = $resultadosRoles->fetch_assoc()) {
+                        $idRol = $filaRol["idCancha"];
+                        $descripcionRol = $filaRol["descripcion"];
+                        echo "<option value='$idRol'>$descripcionRol</option>";
+                    }
+
+                    // Cerrar la conexión a la base de datos
+                    $conexion->close();
+                    ?>
+                </select>
             </div>
-            <button type="submit" class="btn btn-primary">Crear Rol</button>
+            <div class="form-group">
+                <label for="idTarifa">Tarifa</label>
+                <select class="form-control" id="idTarifa" name="idTarifa">
+                    <?php
+                    // Conexión a la base de datos
+                    //$conexion = new mysqli("localhost", "usuario", "contraseña", "nombre_base_de_datos");
+                    $conexion = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
+                    // Verificación de la conexión
+                    if ($conexion->connect_error) {
+                        die("Error de conexión: " . $conexion->connect_error);
+                    }
+
+                    // Consulta para obtener los roles desde la tabla "rol"
+                    $consultaRoles2 = "SELECT idTarifa, descripcion FROM tarifa";
+                    $resultadosRoles2 = $conexion->query($consultaRoles2);
+
+                    // Iterar a través de los resultados y crear opciones para el select
+                    while ($filaRol = $resultadosRoles2->fetch_assoc()) {
+                        $idRol2 = $filaRol["idTarifa"];
+                        $descripcionRol2 = $filaRol["descripcion"];
+                        echo "<option value='$idRol2'>$descripcionRol2</option>";
+                    }
+
+                    // Cerrar la conexión a la base de datos
+                    $conexion->close();
+                    ?>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Crear Horario</button>
         </form>
     </div>
 </div>
@@ -264,33 +377,128 @@ $resultados = $conexion->query($consulta);
 
 
 // Script para manejar el clic en el botón "Modificar"
-$(document).on('click', '.btn-modificar', function () {
-    const idRol = $(this).data('id');
+/*$(document).on('click', '.btn-modificar', function () {
+    const idCancha = $(this).data('id');
+    const idTipoCancha = $(this).data('idTipoCancha');
+    const nombreActual = $(this).data('nombre');
     const descripcionActual = $(this).data('descripcion');
     
     Swal.fire({
-        title: 'Modificar Rol',
-        html: `<input id="swal-input1" class="swal2-input" value="${idRol}" readonly>
-               <input id="swal-input2" class="swal2-input" value="${descripcionActual}" placeholder="Nueva descripción">`,
+        title: 'Modificar Cancha',
+        html: `<input id="swal-input1" class="swal2-input" value="${idCancha}" readonly>
+               <input id="swal-input2" class="swal2-input" value="${idTipoCancha}" placeholder="Nuevo Tipo de Cancha">
+               <input id="swal-input3" class="swal2-input" value="${nombreActual}" placeholder="Nuevo Nombre">
+               <input id="swal-input4" class="swal2-input" value="${descripcionActual}" placeholder="Nueva Descripción">`,
         confirmButtonText: 'Guardar Cambios',
         preConfirm: () => {
-            const nuevaDescripcion = Swal.getPopup().querySelector('#swal-input2').value;
-            return { nuevaDescripcion: nuevaDescripcion.trim() }
+            const nuevoIdTipoCancha = Swal.getPopup().querySelector('#swal-input2').value;
+            const nuevoNombre = Swal.getPopup().querySelector('#swal-input3').value;
+            const nuevaDescripcion = Swal.getPopup().querySelector('#swal-input4').value;
+            return { nuevoIdTipoCancha: nuevoIdTipoCancha.trim(), nuevoNombre: nuevoNombre.trim(), nuevaDescripcion: nuevaDescripcion.trim() }
         },
     }).then((result) => {
         if (result.isConfirmed) {
+            const nuevoIdTipoCancha = result.value.nuevoIdTipoCancha;
+            const nuevoNombre = result.value.nuevoNombre;
             const nuevaDescripcion = result.value.nuevaDescripcion;
             $.ajax({
                 type: 'POST',
-                url: '/admin/mantenimientos/modificar_rol.php',
-                data: { idRol: idRol, nuevaDescripcion: nuevaDescripcion },
+                url: 'ruta_para_modificar_cancha.php', // Reemplaza con la URL correcta en tu proyecto
+                data: { idCancha: idCancha, nuevoIdTipoCancha: nuevoIdTipoCancha, nuevoNombre: nuevoNombre, nuevaDescripcion: nuevaDescripcion },
                 success: function (response) {
                     if (response === 'success') {
-                        Swal.fire('Éxito', 'El rol se ha modificado correctamente', 'success').then(() => {
-                            window.location.href = 'rol.php';
+                        Swal.fire('Éxito', 'La Cancha se ha modificado correctamente', 'success').then(() => {
+                            window.location.reload();
                         });
                     } else {
-                        Swal.fire('Error', 'Hubo un problema al modificar el rol', 'error');
+                        Swal.fire('Error', 'Hubo un problema al modificar la Cancha', 'error');
+                    }
+                },
+                error: function () {
+                    Swal.fire('Error', 'Hubo un error al comunicarse con el servidor', 'error');
+                }
+            });
+        }
+    });
+});*/
+
+// Script para manejar el clic en el botón "Modificar"
+
+var valorJS = <?php echo json_encode($idtc); ?>;
+var valorJS2 = <?php echo json_encode($idtc2); ?>;
+$(document).on('click', '.btn-modificar', function () {
+    const idHorario = $(this).data('id');
+    const idCancha = $(this).data('idcancha');
+    const idTarifa = $(this).data('idtarifa');
+    
+    //var valorJS = <?php echo json_encode($descripcionTipoCancha1); ?>;
+    console.log(valorJS);
+
+    Swal.fire({
+        title: 'Modificar Horario',
+        html: `<input id="swal-input1" class="swal2-input" value="${idHorario}" readonly>
+               <select class="form-control" id="tipoCanchaSelectSwal"></select>
+               <select class="form-control" id="tipoCanchaSelectSwal2"></select>`,
+               //<select class="form-control" id="tipoCanchaSelectSwal" value=""></select>`, // Agregar el menú desplegable
+        confirmButtonText: 'Guardar Cambios',
+        preConfirm: () => {
+            const nuevoIdCancha = $('#tipoCanchaSelectSwal').val(); // Obtener el valor seleccionado
+            const nuevoIdTarifa = $('#tipoCanchaSelectSwal2').val(); // Obtener el valor seleccionado
+            $('#idTipoCanchaSeleccionado').val(nuevoIdCancha); // Actualizar el campo oculto
+            $('#idTipoCanchaSeleccionado2').val(nuevoIdTarifa); // Actualizar el campo oculto
+            //return { nuevoNombre: nuevoNombre.trim(), nuevaDescripcion: nuevaDescripcion.trim() }
+        },
+        onOpen: () => {
+            // Cargar las opciones del menú desplegable en SweetAlert2
+            $.ajax({
+                type: 'GET',
+                url: '/admin/canchas.php', // Reemplaza con la URL correcta en tu proyecto
+                success: function (response) {
+                    $('#tipoCanchaSelectSwal').html(response);
+                    //$('#tipoCanchaSelectSwal').val(idTipoCanchaActual); // Establecer el valor actual
+                    $('#tipoCanchaSelectSwal').val(idCancha);
+                   // $('#tipoCanchaSelectSwal2').val(idTarifa);
+                    //$('#tipoCanchaSelectSwal2').val();
+                    //$('#tipoCanchaSelectSwal option[value="' + idTipoCanchaActual + '"]').prop('selected', true);
+
+                },
+                error: function () {
+                    Swal.fire('Error', 'Hubo un error al cargar los Horarios', 'error');
+                }
+            });
+
+            $.ajax({
+                type: 'GET',
+                url: '/admin/tarifas.php', // Reemplaza con la URL correcta en tu proyecto
+                success: function (response) {
+                    $('#tipoCanchaSelectSwal2').html(response);
+                    //$('#tipoCanchaSelectSwal').val(idTipoCanchaActual); // Establecer el valor actual
+                    $('#tipoCanchaSelectSwal2').val(idTarifa);
+                   // $('#tipoCanchaSelectSwal2').val(idTarifa);
+                    //$('#tipoCanchaSelectSwal2').val();
+                    //$('#tipoCanchaSelectSwal option[value="' + idTipoCanchaActual + '"]').prop('selected', true);
+
+                },
+                error: function () {
+                    Swal.fire('Error', 'Hubo un error al cargar los Horarios', 'error');
+                }
+            });
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const nuevoIdTipoCancha = $('#idTipoCanchaSeleccionado').val(); // Obtener el valor del campo oculto
+            const nuevoIdTipoCancha2 = $('#idTipoCanchaSeleccionado2').val(); // Obtener el valor del campo oculto
+            $.ajax({
+                type: 'POST',
+                url: '/admin/mantenimientos/modificar_horario.php', // Reemplaza con la URL correcta en tu proyecto
+                data: { idHorario: idHorario, nuevoIdTipoCancha: nuevoIdTipoCancha, nuevoIdTipoCancha2: nuevoIdTipoCancha2 },
+                success: function (response) {
+                    if (response === 'success') {
+                        Swal.fire('Éxito', 'El horario se ha modificado correctamente', 'success').then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', 'Hubo un problema al modificar el Horario', 'error');
                     }
                 },
                 error: function () {
@@ -301,9 +509,10 @@ $(document).on('click', '.btn-modificar', function () {
     });
 });
 
+
 // Script para manejar el clic en el botón "Eliminar"
 $(document).on('click', '.btn-eliminar', function () {
-    const idRol = $(this).data('id');
+    const idHorario = $(this).data('id');
 
     // Mostrar un SweetAlert de confirmación
     Swal.fire({
@@ -319,16 +528,15 @@ $(document).on('click', '.btn-eliminar', function () {
             // El usuario confirmó, enviar solicitud AJAX para eliminar el registro
             $.ajax({
                 type: 'POST',
-                url: '/admin/mantenimientos/eliminar_rol.php', // Cambia la URL a la que corresponda en tu proyecto
-                data: { idRol: idRol },
+                url: '/admin/mantenimientos/eliminar_horario.php', // Reemplaza con la URL correcta en tu proyecto
+                data: { idHorario: idHorario },
                 success: function (response) {
                     if (response === 'success') {
-                        Swal.fire('¡Eliminado!', 'El rol ha sido eliminado.', 'success').then(() => {
-                            // Recargar la página o realizar alguna otra acción después de eliminar
+                        Swal.fire('¡Eliminado!', 'El horario ha sido eliminada.', 'success').then(() => {
                             window.location.reload();
                         });
                     } else {
-                        Swal.fire('Error', 'Hubo un problema al eliminar el rol', 'error');
+                        Swal.fire('Error', 'Hubo un problema al eliminar el horario', 'error');
                     }
                 },
                 error: function () {
@@ -341,26 +549,26 @@ $(document).on('click', '.btn-eliminar', function () {
 
 
 
-    $(document).ready(function () {
+$(document).ready(function () {
         // Manejar el envío del formulario de creación de rol
         $('#form-crear-rol').submit(function (e) {
             e.preventDefault();
-
-            const descripcion = $('#descripcion').val();
-
+            const idCancha = $('#idCancha').val();
+            const idTarifa = $('#idTarifa').val();
+            console.log(idCancha);
             // Enviar la solicitud de creación a través de AJAX
             $.ajax({
                 type: 'POST',
-                url: '/admin/mantenimientos/crear_rol.php', // Reemplaza con la URL correcta en tu proyecto
-                data: { descripcion: descripcion },
+                url: '/admin/mantenimientos/crear_horario.php', // Reemplaza con la URL correcta en tu proyecto
+                data: { idCancha: idCancha, idTarifa: idTarifa },
                 success: function (response) {
                     if (response === 'success') {
-                        Swal.fire('Éxito', 'El rol se ha creado correctamente', 'success').then(() => {
+                        Swal.fire('Éxito', 'El horario se ha creado correctamente', 'success').then(() => {
                             // Recargar la página o realizar alguna otra acción después de crear el rol
                             window.location.reload();
                         });
                     } else {
-                        Swal.fire('Error', 'Hubo un problema al crear el rol', 'error');
+                        Swal.fire('Error', 'Hubo un problema al crear el horario', 'error');
                     }
                 },
                 error: function () {
@@ -369,7 +577,6 @@ $(document).on('click', '.btn-eliminar', function () {
             });
         });
     });
-
 
 
 

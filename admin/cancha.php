@@ -266,6 +266,38 @@ $resultados = $conexion->query($consulta);
     <div class="col-md-12">
         <h2 class="mb-4 text-orange">Crear Nueva cancha</h2>
         <form id="form-crear-rol">
+        <div class="form-group">
+                <label for="idTipoCancha">Tipo de cancha</label>
+                <select class="form-control" id="idTipoCancha" name="idTipoCancha">
+                    <?php
+                    // Conexión a la base de datos
+                    //$conexion = new mysqli("localhost", "usuario", "contraseña", "nombre_base_de_datos");
+                    $conexion = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
+                    // Verificación de la conexión
+                    if ($conexion->connect_error) {
+                        die("Error de conexión: " . $conexion->connect_error);
+                    }
+
+                    // Consulta para obtener los roles desde la tabla "rol"
+                    $consultaRoles = "SELECT idTipoCancha, descripcion FROM tipocancha";
+                    $resultadosRoles = $conexion->query($consultaRoles);
+
+                    // Iterar a través de los resultados y crear opciones para el select
+                    while ($filaRol = $resultadosRoles->fetch_assoc()) {
+                        $idRol = $filaRol["idTipoCancha"];
+                        $descripcionRol = $filaRol["descripcion"];
+                        echo "<option value='$idRol'>$descripcionRol</option>";
+                    }
+
+                    // Cerrar la conexión a la base de datos
+                    $conexion->close();
+                    ?>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="nombre">Nombre</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" required>
+            </div>
             <div class="form-group">
                 <label for="descripcion">Descripción de la cancha</label>
                 <input type="text" class="form-control" id="descripcion" name="descripcion" required>
@@ -434,7 +466,7 @@ $(document).on('click', '.btn-eliminar', function () {
             // El usuario confirmó, enviar solicitud AJAX para eliminar el registro
             $.ajax({
                 type: 'POST',
-                url: 'ruta_para_eliminar_cancha.php', // Reemplaza con la URL correcta en tu proyecto
+                url: '/admin/mantenimientos/eliminar_cancha.php', // Reemplaza con la URL correcta en tu proyecto
                 data: { idCancha: idCancha },
                 success: function (response) {
                     if (response === 'success') {
@@ -459,22 +491,24 @@ $(document).on('click', '.btn-eliminar', function () {
         // Manejar el envío del formulario de creación de rol
         $('#form-crear-rol').submit(function (e) {
             e.preventDefault();
-
+            const idTipoCancha = $('#idTipoCancha').val();
+            
+            const nombre = $('#nombre').val();
             const descripcion = $('#descripcion').val();
 
             // Enviar la solicitud de creación a través de AJAX
             $.ajax({
                 type: 'POST',
-                url: '/admin/mantenimientos/crear_tipocancha.php', // Reemplaza con la URL correcta en tu proyecto
-                data: { descripcion: descripcion },
+                url: '/admin/mantenimientos/crear_cancha.php', // Reemplaza con la URL correcta en tu proyecto
+                data: { idTipoCancha: idTipoCancha, nombre: nombre, descripcion: descripcion },
                 success: function (response) {
                     if (response === 'success') {
-                        Swal.fire('Éxito', 'El tipo de cancha se ha creado correctamente', 'success').then(() => {
+                        Swal.fire('Éxito', 'La cancha se ha creado correctamente', 'success').then(() => {
                             // Recargar la página o realizar alguna otra acción después de crear el rol
                             window.location.reload();
                         });
                     } else {
-                        Swal.fire('Error', 'Hubo un problema al crear el tipo de cancha', 'error');
+                        Swal.fire('Error', 'Hubo un problema al crear la cancha', 'error');
                     }
                 },
                 error: function () {

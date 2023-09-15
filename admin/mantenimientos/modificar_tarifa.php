@@ -3,12 +3,13 @@
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Recupera los datos enviados por AJAX
     $idRol = $_POST["idTarifa"];
-    $horarioIni = $_POST["horarioIni"];
-    $horarioFin = $_POST["horarioFin"];
+    $horaIni = $_POST["nuevoHorarioIni"];
+    $horaFin = $_POST["nuevoHorarioFin"];
+    $precio  = $_POST["nuevoPrecio"];
     $nuevaDescripcion = $_POST["nuevaDescripcion"];
 
     // Realiza la validación de datos (puedes agregar más validaciones según tus necesidades)
-    if (empty($idRol) || empty($nuevaDescripcion) || empty($horarioIni) || empty($horarioIni)) {
+    if (empty($nuevaDescripcion) || empty($horaIni) || empty($horaFin)) {
         echo "error"; // Envía una respuesta de error si los datos están incompletos
         exit();
     }
@@ -25,9 +26,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Prepara y ejecuta la consulta para actualizar el rol
-    $consulta = "UPDATE tarifa SET horaIni = ?, horaFin = ?, descripcion = ? WHERE idTarifa = ?";
+    $consulta = "UPDATE tarifa SET horaIni = ?, horaFin = ?, precio = ?, descripcion = ? WHERE idTarifa = ?";
     $stmt = $conexion->prepare($consulta);
-    $stmt->bind_param("si", $horaIni, $horaFin, $nuevaDescripcion, $idRol);
+    $stmt->bind_param("ssssi", $horaIni, $horaFin, $precio, $nuevaDescripcion, $idRol);
 
     if ($stmt->execute()) {
         echo "success"; // La actualización se realizó con éxito

@@ -240,10 +240,10 @@ $resultados = $conexion->query($consulta);
         <h2 class="mb-4 text-orange">Nueva Tarifa</h2>
         <form id="form-crear-rol">
             <div class="form-group">
-            <label for="horaIni">Hora inicio</label>
-            <input type="text" class="form-control" id="horaIni" name="horaIni" required>
-            <label for="horaFin">Hora fin</label>
-            <input type="text" class="form-control" id="horaFin" name="horaFin" required>
+            <label for="horaini">Hora inicio</label>
+            <input type="text" class="form-control" id="horaini" name="horaini" required>
+            <label for="horafin">Hora fin</label>
+            <input type="text" class="form-control" id="horafin" name="horafin" required>
             <label for="precio">Precio</label>
             <input type="text" class="form-control" id="precio" name="precio" required>
                 <label for="descripcion">Descripción de la tarifa</label>
@@ -281,8 +281,8 @@ $resultados = $conexion->query($consulta);
 // Script para manejar el clic en el botón "Modificar"
 $(document).on('click', '.btn-modificar', function () {
     const idTarifa = $(this).data('id');
-    const horaIni = $(this).data('horaIni');
-    const horaFin = $(this).data('horaFin');
+    const horaIni = $(this).data('horaini');
+    const horaFin = $(this).data('horafin');
     const precio = $(this).data('precio');
     const descripcionActual = $(this).data('descripcion');
     
@@ -314,7 +314,7 @@ $(document).on('click', '.btn-modificar', function () {
             $.ajax({
                 type: 'POST',
                 url: '/admin/mantenimientos/modificar_tarifa.php',
-                data: { idTarifa: id, 
+                data: { idTarifa: idTarifa, 
                         nuevoHorarioIni: nuevoHorarioIni,
                         nuevoHorarioFin: nuevoHorarioFin,
                         nuevoPrecio: nuevoPrecio,
@@ -381,8 +381,8 @@ $(document).on('click', '.btn-eliminar', function () {
         $('#form-crear-rol').submit(function (e) {
             e.preventDefault();
 
-            const horaIni = $('#horaIni').val();
-            const horaFin = $('#horaFin').val();
+            const horaIni = $('#horaini').val();
+            const horaFin = $('#horafin').val();
             const precio = $('#precio').val();
             const descripcion = $('#descripcion').val();
 
