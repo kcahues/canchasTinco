@@ -60,6 +60,9 @@ if (!isset($_SESSION["idUsuario"])) {
             <a class="dropdown-item" href="cancha.php">Cancha</a>
             <a class="dropdown-item" href="tarifa.php">Tarifa</a>
             <a class="dropdown-item" href="estado_reserva.php">Estado Reserva</a>
+            <a class="dropdown-item" href="cliente.php">Cliente</a>
+            <a class="dropdown-item" href="horario.php">Horario</a>
+            <a class="dropdown-item" href="horario.php">Usuario</a>
           </div>
         </li>
         <?php }?>

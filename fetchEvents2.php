@@ -15,13 +15,43 @@ if ($conn->connect_error) {
 $view = $_POST['view']; // Recibe la vista desde FullCalendar
 
 if ($view === 'week') {
-    $sql = "SELECT id, title, description, location, date, time_from, time_to, google_calendar_event_id, created FROM events";
+    $sql = "SELECT idReserva, title, description, location, date, time_from, time_to, google_calendar_event_id FROM reserva where idEstadoReserva <> 1";
 } elseif ($view === 'month') {
-    $sql = "SELECT id, title, description, location, date, time_from, time_to, google_calendar_event_id, created FROM events WHERE MONTH(date) = MONTH(NOW())";
+    $sql = "SELECT idReserva, title, description, location, date, time_from, time_to, google_calendar_event_id FROM reserva WHERE MONTH(date) = MONTH(NOW()) and idEstadoReserva <> 1";
 } elseif ($view === 'day') {
+    $sql = "SELECT idReserva, title, description, location, date, time_from, time_to, google_calendar_event_id FROM reserva WHERE DATE(date) = DATE(NOW()) and idEstadoReserva <> 1";
+} else {
+    $sql = "SELECT idReserva, title, description, location, date, time_from, time_to, google_calendar_event_id FROM reserva where idEstadoReserva <> 1";
+}
+
+$result = $conn->query($sql);
+
+$events = array();
+
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $events[] = array(
+            'id' => $row['idReserva'],
+            'title' => $row['title'],
+            'description' => $row['description'],
+            'location' => $row['location'],
+            'date' => $row['date'],
+            'start' => $row['date'] . ' ' . $row['time_from'],
+            'end' => $row['date'] . ' ' . $row['time_to'],
+            'google_calendar_event_id' => $row['google_calendar_event_id'],
+            //'created' => $row['created']
+        );
+    }
+}
+
+/*if ($view === 'week2') {
+    $sql = "SELECT id, title, description, location, date, time_from, time_to, google_calendar_event_id, created FROM events";
+} elseif ($view === 'month2') {
+    $sql = "SELECT id, title, description, location, date, time_from, time_to, google_calendar_event_id, created FROM events WHERE MONTH(date) = MONTH(NOW())";
+} elseif ($view === 'day2') {
     $sql = "SELECT id, title, description, location, date, time_from, time_to, google_calendar_event_id, created FROM events WHERE DATE(date) = DATE(NOW())";
 } else {
-    $sql = "SELECT id, title, description, location, date, time_from, time_to, google_calendar_event_id, created FROM events";
+    //$sql = "SELECT id, title, description, location, date, time_from, time_to, google_calendar_event_id, created FROM events";
 }
 
 $result = $conn->query($sql);
@@ -42,7 +72,7 @@ if ($result->num_rows > 0) {
             'created' => $row['created']
         );
     }
-}
+}*/
 
 echo json_encode($events);
 

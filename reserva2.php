@@ -44,6 +44,7 @@ $fecha = "";
 $email = "";
 $tipoCancha = "";
 $idCliente = "";
+$idC = "";
 // Verifica si se ha enviado el formulario
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $conexion2 = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
@@ -85,14 +86,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             // El correo o teléfono existe en la tabla cliente, y $idCliente contiene el valor
             //echo "entro";
             //echo $idCliente;
+            $idC = $idCliente;
         } else {
             // El correo o teléfono no existe en la tabla cliente
           //  $mensajeError = "El número de teléfono o correo electrónico ya están registrados en la base de datos." . $idCliente;
             //Inserta el cliente nuevo
             $stmtCliente2->execute();
             $stmtCliente2->store_result();
-            $idCliente = $stmtCliente2->insert_id;
-            echo $idCliente;
+            $idC = $stmtCliente2->insert_id;
+            
         }
         
       /*  if ($stmtCliente->num_rows === 0) {
@@ -106,26 +108,72 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             
         }*/
     }
+    $idHorario = "";
     //Sigue el proceso de creacion
     if (empty($mensajeError)) {
         //No hay error y procede
-        
-        //Id usuario
-        echo $idUsuario;
-        echo $idCliente;
-        $estadoReserva = 1;    
+        $conexion5 = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco"); 
+        $sql_tarifa = "SELECT idTarifa
+               FROM tarifa
+               WHERE '$hora_inicio' BETWEEN horaIni AND horaFin";
+
+        $result_tarifa = $conexion5->query($sql_tarifa);
+
+        if ($result_tarifa->num_rows > 0) {
+            $row_tarifa = $result_tarifa->fetch_assoc();
+            $idTarifa = $row_tarifa["idTarifa"];
+
+            // Paso 2: Buscar idHorario en la tabla horario usando idTarifa
+            $sql_horario = "SELECT idHorario
+                            FROM horario
+                            WHERE idCancha = $tipoCancha 
+                            AND   idTarifa = $idTarifa";
+
+            $result_horario = $conexion5->query($sql_horario);
+
+            if ($result_horario->num_rows > 0) {
+                $row_horario = $result_horario->fetch_assoc();
+                $idHorario = $row_horario["idHorario"];
+             //   echo "El idHorario es: " . $idHorario;
+            } else {
+             //   echo "No se encontró un idHorario para la hora especificada.";
+            }
+        } else {
+           // echo "No se encontró una tarifa para la hora especificada.";
+        }
+
+
+
+        // Sumar 1 hora
+        $hora_fin = date("H:i:s", strtotime($hora_inicio . " +1 hour"));
+        $estadoReserva = 1;
+        //Nueva conexión para crear solicitudes de reservas
+        $conexion4 = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
+        $inserta2 = "INSERT INTO reserva ( idUsuario, idHorario, idCliente, idEstadoReserva, fechaReserva, time_from, time_to) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $stmtCliente3 = $conexion4->prepare($inserta2);
+        $stmtCliente3->bind_param("iiiisss", $idUsuario,$idHorario, $idC,$estadoReserva,$fecha,$hora_inicio,$hora_fin);
+        $stmtCliente3->execute();
+        $stmtCliente3->store_result();
+        $idS = $stmtCliente3->insert_id;
+        $stmtCliente3->close();
+        $conexion4->close();
+        $conexion5->close();
+
+            
         $nombre = "";
         $telefono = "";
         $hora_inicio = "";
         $fecha = "";
         $email = "";
         $tipoCancha = "";
-        $mensajeExito = "Se ha generado tu solicitud de reservacion";
+        $mensajeExito = "Se ha generado tu solicitud de reservacion con número: " . $idS;
     }
     $stmtCliente2->close();
+    
     $stmtCliente->close();
     $conexion2->close();
     $conexion3->close();
+    
 }
 date_default_timezone_set('America/Guatemala'); // Establece la zona horaria a la de Guatemala o la que necesites
 

@@ -54,7 +54,7 @@ if ($request_type === 'addEvent' ) {
     $event_data = json_decode($_POST['event_data'], true);
     
     // Inserta un nuevo evento en la base de datos
-    $sql = "INSERT INTO events (title, description, location, date, time_from, time_to, google_calendar_event_id, created) VALUES (?, ?, ?, ?, ?, ?, NULL, NOW())";
+    $sql = "INSERT INTO reserva (title, description, location, date, time_from, time_to, google_calendar_event_id) VALUES (?, ?, ?, ?, ?, ?, NULL)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ssssss", $event_data[0], $event_data[1], $event_data[2], $event_data[3], $event_data[4], $event_data[5]);
 
@@ -66,6 +66,25 @@ if ($request_type === 'addEvent' ) {
 
     $stmt->close();
 }
+
+/*if ($request_type === 'addEvent' ) {
+    $start = $_POST['start'];
+    $end = $_POST['end'];
+    $event_data = json_decode($_POST['event_data'], true);
+    
+    // Inserta un nuevo evento en la base de datos
+    $sql = "INSERT INTO events (title, description, location, date, time_from, time_to, google_calendar_event_id, created) VALUES (?, ?, ?, ?, ?, ?, NULL, NOW())";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ssssss", $event_data[0], $event_data[1], $event_data[2], $event_data[3], $event_data[4], $event_data[5]);
+
+    if ($stmt->execute() === TRUE) {
+        echo json_encode(array('status' => 1));
+    } else {
+        echo json_encode(array('status' => 0, 'error' => 'Error al agregar evento.'));
+    }
+
+    $stmt->close();
+}*/
 
 if ($request_type === 'addEvent2') {
     // Validación de datos (puedes agregar más validaciones según tus requisitos)
@@ -114,7 +133,7 @@ if ($request_type === 'editEvent') {
     $new_description = $description;
     $new_location = $location;
 
-    $sql =  "UPDATE events SET title=?, description=?, location=?, date=?, time_from=?, time_to=? WHERE id=?";
+    $sql =  "UPDATE reserva SET title=?, description=?, location=?, date=?, time_from=?, time_to=? WHERE idReserva=?";
    
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ssssssi", $title, $description, $location, $date, $time_from, $time_to, $event_id);
@@ -141,6 +160,51 @@ if ($request_type === 'editEvent') {
     //echo 'success';
 }
 
+
+/*if ($request_type === 'editEvent') {
+    // Obtener los datos del evento a editar
+    $event_id = $_POST['event_id'];
+    $title = $_POST['title'];
+    $description = $_POST['description'];
+    $location = $_POST['location'];
+    $date = $_POST['date'];
+    $time_from = $_POST['time_from'];
+    $time_to = $_POST['time_to'];
+
+    // Realiza la edición del evento en la base de datos
+    // Aquí debes escribir tu lógica para actualizar los datos del evento
+
+    // Por ejemplo, puedes actualizar la descripción y la ubicación del evento
+    $new_description = $description;
+    $new_location = $location;
+
+    $sql =  "UPDATE events SET title=?, description=?, location=?, date=?, time_from=?, time_to=? WHERE id=?";
+   
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ssssssi", $title, $description, $location, $date, $time_from, $time_to, $event_id);
+
+    if ($stmt->execute()) {
+        echo 'success'; // Envía una respuesta de éxito al cliente
+    } else {
+        echo 'error'; // Envía una respuesta de error al cliente
+    }
+    /*if ($stmt->execute() === TRUE) {
+        echo json_encode(array('status' => 1));
+    } else {
+        echo json_encode(array('status' => 0, 'error' => 'Error al editar evento.'));
+    }*/
+
+  /*  $stmt->close();
+    // Realiza una consulta SQL para actualizar los datos del evento
+    // ... (tu código de actualización aquí)
+
+    // Si la actualización fue exitosa, envía 'success' como respuesta
+    // Si ocurrió un error, envía un mensaje de error apropiado
+    // ...
+
+    //echo 'success';
+}*/
+
 /*if ($request_type === 'editEvent') {
     $event_id = $_POST['event_id'];
     $start = $_POST['start'];
@@ -165,7 +229,7 @@ if ($request_type === 'deleteEvent') {
     $event_id = $_POST['event_id'];
 
     // Elimina un evento de la base de datos (ajusta la consulta SQL)
-    $sql = "DELETE FROM events WHERE id=?";
+    $sql = "DELETE FROM reserva WHERE idReserva=?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $event_id);
 
@@ -176,7 +240,50 @@ if ($request_type === 'deleteEvent') {
     }
 }
 
+/*if ($request_type === 'deleteEvent') {
+    $event_id = $_POST['event_id'];
+
+    // Elimina un evento de la base de datos (ajusta la consulta SQL)
+    $sql = "DELETE FROM events WHERE id=?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $event_id);
+
+    if ($stmt->execute()) {
+        echo 'success'; // Envía una respuesta de éxito al cliente
+    } else {
+        echo 'error'; // Envía una respuesta de error al cliente
+    }
+}*/
+
 if ($request_type === 'getEventById') {
+    // Obtiene el ID del evento que deseas consultar desde la solicitud POST
+    $event_id = $_POST['event_id'];
+
+    // Realiza una consulta SQL para obtener la información del evento por su ID
+    $sql = "SELECT idReserva, title, description, location, date, time_from, time_to FROM reserva WHERE idReserva = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $event_id);
+
+    if ($stmt->execute()) {
+        $result = $stmt->get_result();
+        $event_data = $result->fetch_assoc();
+
+        if ($event_data) {
+            // Retorna la información del evento como un array JSON
+            echo json_encode($event_data);
+        } else {
+            // El evento con el ID especificado no existe
+            echo 'not_found';
+        }
+    } else {
+        // Hubo un error al ejecutar la consulta
+        echo 'error';
+    }
+
+    $stmt->close();
+}
+
+if ($request_type === 'getEventById2') {
     // Obtiene el ID del evento que deseas consultar desde la solicitud POST
     $event_id = $_POST['event_id'];
 

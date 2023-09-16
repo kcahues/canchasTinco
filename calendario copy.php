@@ -354,7 +354,66 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('btnDay').addEventListener('click', function() {
     calendar.changeView('timeGridDay');
   });
-  
+
+  document.getElementById('btnAddEvent2').addEventListener('click', function() {
+  // Obtener la fecha actual
+  const currentDate = new Date();
+  // Formatear la fecha actual como YYYY-MM-DD
+  const currentDateFormatted = currentDate.toISOString().split('T')[0];
+
+  Swal.fire({
+    title: 'Crear reservación',
+    confirmButtonText: 'Crear',
+    showCloseButton: true,
+    showCancelButton: true,
+    html:
+      '<input id="swalEvtTitle" class="swal2-input" placeholder="Ingresa título">' +
+      '<textarea id="swalEvtDesc" class="swal2-input" placeholder="Ingresa descripción"></textarea>' +
+      '<input id="swalEvtLocation" class="swal2-input" placeholder="Ingresa ubicación">' +
+      '<input type="date" id="swalEvtDate" class="swal2-input" placeholder="Fecha" value="'+ currentDateFormatted + '">' +
+      '<input type="time" id="swalEvtTimeFrom" class="swal2-input" placeholder="Hora inicio">' +
+      '<input type="time" id="swalEvtTimeTo" class="swal2-input" placeholder="Hora fin">',
+    focusConfirm: false,
+    preConfirm: () => {
+      return [
+        document.getElementById('swalEvtTitle').value,
+        document.getElementById('swalEvtDesc').value,
+        document.getElementById('swalEvtLocation').value,
+        document.getElementById('swalEvtDate').value,
+        document.getElementById('swalEvtTimeFrom').value,
+        document.getElementById('swalEvtTimeTo').value,
+      ];
+    }
+  }).then((result) => {
+    if (result.value) {
+      // Add event
+      fetch("eventHandler2.php", { // Cambio en la URL
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          request_type: 'addEvent',
+          start: currentDateFormatted, // Utiliza la fecha formateada
+          end: currentDateFormatted, // Utiliza la misma fecha para el inicio y el fin
+          event_data: result.value
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status == 1) {
+          Swal.fire('Reservación creada correctamente!', '', 'success');
+        } else {
+          Swal.fire(data.error, '', 'error');
+        }
+
+        // Refetch events from all sources and rerender
+        calendar.refetchEvents();
+      })
+      .catch(console.error);
+    }
+  });
+});
+
+
   calendar.render();
 });
 </script>
@@ -414,7 +473,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <button id="btnMonth" class="dark-button">Mes</button>
         <button id="btnWeek" class="dark-button">Semana</button>
         <button id="btnDay" class="dark-button">Día</button>
-        
+        <button id="btnAddEvent2" class="dark-button">Agregar Evento</button>
 
     </div>  
     
