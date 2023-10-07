@@ -29,15 +29,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $mail->setFrom('info@canchastinco.com', 'Correo Canchas Tinco');
         //$mail->setFrom($email, $nombre);
         $mail->addAddress($email); // Reemplaza con la dirección de correo de destino
-        $mail->addCC('info@canchastinco.com');
         $mail->isHTML(true);
         $mail->Subject = 'Correo información';
-        $mail->Body = 'Nombre: ' . $nombre . ' es un gusto atenderte, en breve daremos seguimiento a tu solicitud.'
-              . "<br><br>" . $mensaje;
+        $mail->Body = $mensaje;
 
         // Envía el correo
         $mail->send();
-        header("Location: index.php?mensaje=El mensaje se ha enviado con éxito.");
         echo 'El mensaje se ha enviado con éxito.';
     } catch (Exception $e) {
         echo 'Error al enviar el mensaje: ' . $mail->ErrorInfo;

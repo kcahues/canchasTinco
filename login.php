@@ -123,6 +123,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
     <button type="submit" class="btn btn-primary btn-orange">Iniciar Sesión</button>
   </form>
+  
   <p class="mt-3"> 
     <a href="index.php" class="back-link">Regresar a la página principal</a>
   </p>

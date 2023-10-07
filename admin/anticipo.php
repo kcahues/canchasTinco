@@ -1,16 +1,17 @@
 <?php
 session_start();
 $descripcionTipoCancha1 = "";
+$descripcionTipoCancha12 = "";
 $idtc = "";
+$idtc2 = "";
 // Verificar si el usuario ha iniciado sesión
 if (!isset($_SESSION["idUsuario"])) {
-    header("Location: login.php"); // Redirigir a la página de inicio de sesión si no ha iniciado sesión
+    header("Location: /login.php"); // Redirigir a la página de inicio de sesión si no ha iniciado sesión
     exit();
 }
 
 // Conexión a la base de datos
 $conexion = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
-
 
 // Verificación de la conexión
 if ($conexion->connect_error) {
@@ -30,14 +31,14 @@ $stmt = null;
 // Procesamiento de la búsqueda
 if (isset($_GET["filtro"])) {
     $filtro = "%" . $_GET["filtro"] . "%";
-    $consulta = "SELECT * FROM tarifa WHERE descripcion LIKE ? ORDER BY idTarifa ASC";
+    $consulta = "SELECT * FROM anticipo WHERE motivo LIKE ? ORDER BY idAnticipo ASC";
     $stmt = $conexion->prepare($consulta);
     $stmt->bind_param("s", $filtro);
     $stmt->execute();
     $resultados = $stmt->get_result();
 
     // Consulta para contar el número total de registros después de la búsqueda
-    $totalRegistrosConsulta = "SELECT COUNT(*) as total FROM tarifa WHERE descripcion LIKE ?";
+    $totalRegistrosConsulta = "SELECT COUNT(*) as total FROM anticipo WHERE motivo LIKE ?";
     $stmtTotal = $conexion->prepare($totalRegistrosConsulta);
     $stmtTotal->bind_param("s", $filtro);
     $stmtTotal->execute();
@@ -45,11 +46,11 @@ if (isset($_GET["filtro"])) {
     $totalRegistros = $totalRegistrosResultado->fetch_assoc()['total'];
 } else {
     // Consulta sin filtro de búsqueda
-    $consulta = "SELECT * FROM tarifa ORDER BY idTarifa ASC LIMIT $registrosPorPagina OFFSET $offset";
+    $consulta = "SELECT * FROM anticipo ORDER BY idAnticipo ASC LIMIT $registrosPorPagina OFFSET $offset";
     $resultados = $conexion->query($consulta);
 
     // Consulta para contar el número total de registros sin filtro
-    $totalRegistrosConsulta = "SELECT COUNT(*) as total FROM tarifa";
+    $totalRegistrosConsulta = "SELECT COUNT(*) as total FROM anticipo";
     $totalRegistrosResultado = $conexion->query($totalRegistrosConsulta);
     $totalRegistros = $totalRegistrosResultado->fetch_assoc()['total'];
 }
@@ -63,7 +64,7 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tarifas</title>
+    <title>Anticipos</title>
     <!-- Incluir los estilos de Bootstrap -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -138,6 +139,7 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
             <a class="dropdown-item" href="cliente.php">Cliente</a>
             <a class="dropdown-item" href="horario.php">Horario</a>
             <a class="dropdown-item" href="usuario.php">Usuario</a>
+            <a class="dropdown-item" href="anticipo.php">Anticipos</a>
           </div>
         </li>
         <?php }?>
@@ -160,7 +162,7 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 
 <div class="row">
   <div class="col-md-12">
-<h1 class="mb-4 text-orange ">Tarifas</h1>
+<h1 class="mb-4 text-orange ">Anticipos</h1>
   </div>
 </div>
 <!-- Formulario de búsqueda -->
@@ -181,13 +183,13 @@ $stmt = null;
 // Procesamiento de la búsqueda
 if (isset($_GET["filtro"])) {
 $filtro = "%" . $_GET["filtro"] . "%";
-$consulta = "SELECT * FROM tarifa WHERE descripcion LIKE ? ORDER BY idTarifa ASC";
+$consulta = "SELECT * FROM anticipo WHERE motivo LIKE ? ORDER BY idAnticipo ASC";
 $stmt = $conexion->prepare($consulta);
 $stmt->bind_param("s", $filtro);
 $stmt->execute();
 $resultados = $stmt->get_result();
 } else {
-$consulta = "SELECT * FROM tarifa ORDER BY idTarifa ASC LIMIT $registrosPorPagina OFFSET $offset";
+$consulta = "SELECT * FROM anticipo ORDER BY idAnticipo ASC LIMIT $registrosPorPagina OFFSET $offset";
 $resultados = $conexion->query($consulta);
 
 }
@@ -228,12 +230,13 @@ $resultados = $conexion->query($consulta);
 <table class="table table-striped table-dark" >
 <thead>
     <tr>
-        <th>ID Tarifa</th>
-        <th>Cancha</th>
-        <th>Hora Inicio</th>
-        <th>Hora Fin</th>
-        <th>Precio</th>
-        <th>Descripción</th>
+        <th>ID Anticipo</th>
+        <th>Monto anticipo</th>
+        <th>Fecha anticipo</th>
+        <th>Tipo Anticipo</th>
+        <th>No documento</th>
+        <th>Motivo</th>
+        <th>Anticipo ya asignado?</th>
         <th>Acciones</th>
         
     </tr>
@@ -241,15 +244,17 @@ $resultados = $conexion->query($consulta);
 <tbody>
     <?php while ($fila = $resultados->fetch_assoc()): ?>
     <tr>
-        <td><?php echo $fila["idTarifa"]; ?></td>
+        <td><?php echo $fila["idAnticipo"]; ?></td>
+        <td><?php echo $fila["montoAnticipo"]; ?></td>
+        <td><?php echo $fila["fechaAnticipo"]; ?></td>
         <td>
             <?php 
-                $tcancha = $fila["idCancha"];
+                $tcancha = $fila["tipoAnticipo"];
                 $idtc = $tcancha;
-                $consultaTiposCancha1 = "SELECT * FROM cancha where idCancha = $tcancha";
+                $consultaTiposCancha1 = "SELECT * FROM tipoanticipo where idTipoAnticipo = $tcancha";
                 $resultadosTiposCancha1 = $conexion->query($consultaTiposCancha1);
                 while ($filaTipoCancha1 = $resultadosTiposCancha1->fetch_assoc()) {
-                    $idTipoCancha1 = $filaTipoCancha1["idCancha"];
+                    $idTipoCancha1 = $filaTipoCancha1["idTipoAnticipo"];
                     $descripcionTipoCancha1 = $filaTipoCancha1["descripcion"];
                     //echo "<option value='$idTipoCancha'>$descripcionTipoCancha</option>";
                 }
@@ -258,11 +263,11 @@ $resultados = $conexion->query($consulta);
  <!--   <select type="hidden"class="form-control" id="tipoCanchaSelect" name="tipoCancha">
         <?php
         // Consulta para obtener los valores de la tabla tipocancha
-        $consultaTiposCancha = "SELECT * FROM cancha";
+        $consultaTiposCancha = "SELECT * FROM tipoanticipo";
         $resultadosTiposCancha = $conexion->query($consultaTiposCancha);
 
         while ($filaTipoCancha = $resultadosTiposCancha->fetch_assoc()) {
-            $idTipoCancha = $filaTipoCancha["idCancha"];
+            $idTipoCancha = $filaTipoCancha["tipoAnticipo"];
             $descripcionTipoCancha = $filaTipoCancha["descripcion"];
             echo "<option value='$idTipoCancha'>$descripcionTipoCancha</option>";
         }
@@ -270,19 +275,19 @@ $resultados = $conexion->query($consulta);
     </select> !-->
 </td>
 <input type="hidden" id="idTipoCanchaSeleccionado" name="idTipoCanchaSeleccionado">
-        
-        <td><?php echo $fila["horaIni"]; ?></td>
-        <td><?php echo $fila["horaFin"]; ?></td>
-        <td><?php echo $fila["precio"]; ?></td>
-        <td><?php echo $fila["descripcion"]; ?></td>
+        <td><?php echo $fila["noDocumento"]; ?></td>
+        <td><?php echo $fila["motivo"]; ?></td>
+        <td><?php echo $fila["asignado"]; ?></td>
         <td>
-        <button class="btn btn-info btn-modificar" data-id="<?php echo $fila["idTarifa"]; ?>" 
-        data-idcancha="<?php echo $fila["idCancha"]; ?>"
-         data-horaIni="<?php echo $fila["horaIni"]; ?>" data-horaFin="<?php echo $fila["horaFin"]; ?>" data-precio="<?php echo $fila["precio"]; ?>"
-                                                   data-descripcion="<?php echo $fila["descripcion"]; ?>">Modificar</button>
-                                                   
-        <button class="btn btn-danger btn-eliminar" data-id="<?php echo $fila["idTarifa"]; ?>">Eliminar</button>
-            <!-- <button class="btn btn-info btn-modificar" data-id="<?php echo $fila["idTarifa"]; ?>" data-descripcion="<?php echo $fila["descripcion"]; ?>">Modificar</button>
+        <button class="btn btn-info btn-modificar" data-id="<?php echo $fila["idAnticipo"]; ?>" 
+        data-monto="<?php echo $fila["montoAnticipo"]; ?>"
+        data-fecha="<?php echo $fila["fechaAnticipo"]; ?>"
+        data-tipo="<?php echo $fila["tipoAnticipo"]; ?>"
+        data-documento="<?php echo $fila["noDocumento"]; ?>"
+        data-motivo="<?php echo $fila["motivo"]; ?>"
+        data-asignado="<?php echo $fila["asignado"]; ?>">Modificar</button>
+        <button class="btn btn-danger btn-eliminar" data-id="<?php echo $fila["idAnticipo"]; ?>">Eliminar</button>
+            <!-- <button class="btn btn-info btn-modificar" data-id="<?php echo $fila["idCancha"]; ?>" data-descripcion="<?php echo $fila["descripcion"]; ?>">Modificar</button>
                 Agregamos un botón "Modificar" con atributos de datos para el ID y descripción del rol -->
         </td>
 
@@ -304,11 +309,19 @@ $resultados = $conexion->query($consulta);
 
 <div class="row">
     <div class="col-md-12">
-        <h2 class="mb-4 text-orange">Nueva Tarifa</h2>
+        <h2 class="mb-4 text-orange">Crear Nuevo Anticipo</h2>
         <form id="form-crear-rol">
         <div class="form-group">
-                <label for="idCancha">Cancha</label>
-                <select class="form-control" id="idCancha" name="idCancha">
+                <label for="montoAnticipo">Monto anticipo</label>
+                <input type="text" class="form-control" id="montoAnticipo" name="montoAnticipo" required>
+        </div>
+        <div class="form-group">
+                <label for="fechaAnticipo">Fecha anticipo</label>
+                <input type="date" class="form-control" id="fechaAnticipo" name="fechaAnticipo" required>
+        </div>  
+        <div class="form-group">
+                <label for="tipoAnticipo">Tipo anticipo</label>
+                <select class="form-control" id="tipoAnticipo" name="tipoAnticipo">
                     <?php
                     // Conexión a la base de datos
                     //$conexion = new mysqli("localhost", "usuario", "contraseña", "nombre_base_de_datos");
@@ -319,12 +332,12 @@ $resultados = $conexion->query($consulta);
                     }
 
                     // Consulta para obtener los roles desde la tabla "rol"
-                    $consultaRoles = "SELECT idCancha, descripcion FROM cancha";
+                    $consultaRoles = "SELECT idTipoAnticipo, descripcion FROM tipoanticipo";
                     $resultadosRoles = $conexion->query($consultaRoles);
 
                     // Iterar a través de los resultados y crear opciones para el select
                     while ($filaRol = $resultadosRoles->fetch_assoc()) {
-                        $idRol = $filaRol["idCancha"];
+                        $idRol = $filaRol["idTipoAnticipo"];
                         $descripcionRol = $filaRol["descripcion"];
 
                         echo "<option value='$idRol'>$descripcionRol</option>";
@@ -336,16 +349,15 @@ $resultados = $conexion->query($consulta);
                 </select>
             </div>
             <div class="form-group">
-            <label for="horaini">Hora inicio</label>
-            <input type="text" class="form-control" id="horaini" name="horaini" required>
-            <label for="horafin">Hora fin</label>
-            <input type="text" class="form-control" id="horafin" name="horafin" required>
-            <label for="precio">Precio</label>
-            <input type="text" class="form-control" id="precio" name="precio" required>
-                <label for="descripcion">Descripción de la tarifa</label>
-                <input type="text" class="form-control" id="descripcion" name="descripcion" required>
+                <label for="noDocumento">No Documento</label>
+                <input type="text" class="form-control" id="noDocumento" name="noDocumento" required>
             </div>
-            <button type="submit" class="btn btn-primary">Crear nueva tarifa</button>
+            <div class="form-group">
+                <label for="motivo">Motivo</label>
+                <input type="text" class="form-control" id="motivo" name="motivo" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Crear anticipo</button>
         </form>
     </div>
 </div>
@@ -373,79 +385,129 @@ $resultados = $conexion->query($consulta);
 
     // Script para manejar el clic en el botón "Modificar"
 
-    var valorJS = <?php echo json_encode($idtc); ?>;
+
 // Script para manejar el clic en el botón "Modificar"
-$(document).on('click', '.btn-modificar', function () {
-    const idTarifa = $(this).data('id');
-    const idCanchaActual = $(this).data('idcancha'); // Obtener el ID actual
-    const horaIni = $(this).data('horaini');
-    const horaFin = $(this).data('horafin');
-    const precio = $(this).data('precio');
+/*$(document).on('click', '.btn-modificar', function () {
+    const idCancha = $(this).data('id');
+    const idTipoCancha = $(this).data('idTipoCancha');
+    const nombreActual = $(this).data('nombre');
     const descripcionActual = $(this).data('descripcion');
     
     Swal.fire({
-        title: 'Modificar Horario',
-        html: `<input id="swal-input1" class="swal2-input" value="${idTarifa}" readonly>
-               <input id="swal-input4" class="swal2-input" value="${horaIni}" placeholder="Horario Fin">
-               <input id="swal-input5" class="swal2-input" value="${horaFin}" placeholder="Horario Fin">
-               <input id="swal-input6" class="swal2-input" value="${precio}" placeholder="Precio">
-               <input id="swal-input7" class="swal2-input" value="${descripcionActual}" placeholder="Nueva descripción">
-               <select class="form-control" id="tipoCanchaSelectSwal"></select>`,
+        title: 'Modificar Cancha',
+        html: `<input id="swal-input1" class="swal2-input" value="${idCancha}" readonly>
+               <input id="swal-input2" class="swal2-input" value="${idTipoCancha}" placeholder="Nuevo Tipo de Cancha">
+               <input id="swal-input3" class="swal2-input" value="${nombreActual}" placeholder="Nuevo Nombre">
+               <input id="swal-input4" class="swal2-input" value="${descripcionActual}" placeholder="Nueva Descripción">`,
         confirmButtonText: 'Guardar Cambios',
         preConfirm: () => {
+            const nuevoIdTipoCancha = Swal.getPopup().querySelector('#swal-input2').value;
+            const nuevoNombre = Swal.getPopup().querySelector('#swal-input3').value;
+            const nuevaDescripcion = Swal.getPopup().querySelector('#swal-input4').value;
+            return { nuevoIdTipoCancha: nuevoIdTipoCancha.trim(), nuevoNombre: nuevoNombre.trim(), nuevaDescripcion: nuevaDescripcion.trim() }
+        },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const nuevoIdTipoCancha = result.value.nuevoIdTipoCancha;
+            const nuevoNombre = result.value.nuevoNombre;
+            const nuevaDescripcion = result.value.nuevaDescripcion;
+            $.ajax({
+                type: 'POST',
+                url: 'ruta_para_modificar_cancha.php', // Reemplaza con la URL correcta en tu proyecto
+                data: { idCancha: idCancha, nuevoIdTipoCancha: nuevoIdTipoCancha, nuevoNombre: nuevoNombre, nuevaDescripcion: nuevaDescripcion },
+                success: function (response) {
+                    if (response === 'success') {
+                        Swal.fire('Éxito', 'La Cancha se ha modificado correctamente', 'success').then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', 'Hubo un problema al modificar la Cancha', 'error');
+                    }
+                },
+                error: function () {
+                    Swal.fire('Error', 'Hubo un error al comunicarse con el servidor', 'error');
+                }
+            });
+        }
+    });
+});*/
 
-            const nuevoHorarioIni = Swal.getPopup().querySelector('#swal-input4').value;
-            const nuevoHorarioFin = Swal.getPopup().querySelector('#swal-input5').value;
-            const nuevoPrecio = Swal.getPopup().querySelector('#swal-input6').value;
-            const nuevaDescripcion = Swal.getPopup().querySelector('#swal-input7').value;
-            const nuevoIdCancha = $('#tipoCanchaSelectSwal').val(); // Obtener el valor seleccionado
-            $('#idTipoCanchaSeleccionado').val(nuevoIdCancha); // Actualizar el campo oculto
-            return { nuevoHorarioIni: nuevoHorarioIni.trim(),
-                nuevoHorarioFin: nuevoHorarioFin.trim(),
-                nuevoPrecio: nuevoPrecio.trim(),
-                nuevaDescripcion: nuevaDescripcion.trim() }
+// Script para manejar el clic en el botón "Modificar"
+
+var valorJS = <?php echo json_encode($idtc); ?>;
+$(document).on('click', '.btn-modificar', function () {
+    const idAnticipo = $(this).data('id');
+    const montoAnticipo = $(this).data('monto');
+    const fechaAnticipoActual = $(this).data('fecha');
+    const noDocumentoActual = $(this).data('documento'); // Obtener el ID actual
+    const motivoActual = $(this).data('motivo');
+    const tipoAnticipoActual = $(this).data('tipo');
+
+    //var valorJS = <?php echo json_encode($descripcionTipoCancha1); ?>;
+    
+
+    Swal.fire({
+        title: 'Modificar Anticipo',
+        html: `<input id="swal-input1" class="swal2-input" value="${idAnticipo}" readonly>
+               <input id="swal-input2" class="swal2-input" value="${montoAnticipo}" placeholder="Monto Anticipo">
+               <input id="swal-input3" class="swal2-input" value="${fechaAnticipoActual}" placeholder="Fecha Anticipo">
+               <input id="swal-input4" class="swal2-input" value="${noDocumentoActual}" placeholder="No documento">
+               <input id="swal-input5" class="swal2-input" value="${motivoActual}" placeholder="Motivo">
+               <select class="form-control" id="tipoCanchaSelectSwal"></select>`,
+               //<select class="form-control" id="tipoCanchaSelectSwal" value=""></select>`, // Agregar el menú desplegable
+        confirmButtonText: 'Guardar Cambios',
+        preConfirm: () => {
+            const nuevoMonto = Swal.getPopup().querySelector('#swal-input2').value;
+            const nuevaFechaAnticipo = Swal.getPopup().querySelector('#swal-input3').value;
+            const nuevoNoDocumento = Swal.getPopup().querySelector('#swal-input4').value;
+            const nuevoMotivo= Swal.getPopup().querySelector('#swal-input5').value;
+            const nuevoIdTipoCancha = $('#tipoCanchaSelectSwal').val(); // Obtener el valor seleccionado
+            
+            $('#idTipoCanchaSeleccionado').val(nuevoIdTipoCancha); // Actualizar el campo oculto
+            
+            return { nuevoMonto: nuevoMonto.trim(),nuevaFechaAnticipo: nuevaFechaAnticipo,
+                     nuevoNoDocumento: nuevoNoDocumento.trim(), nuevoMotivo: nuevoMotivo,
+                    nuevoIdTipoCancha: nuevoIdTipoCancha }
         },
         onOpen: () => {
             // Cargar las opciones del menú desplegable en SweetAlert2
             $.ajax({
                 type: 'GET',
-                url: '/admin/canchas.php', // Reemplaza con la URL correcta en tu proyecto
+                url: '/admin/tipos_anticipo.php', // Reemplaza con la URL correcta en tu proyecto
                 success: function (response) {
                     $('#tipoCanchaSelectSwal').html(response);
                     //$('#tipoCanchaSelectSwal').val(idTipoCanchaActual); // Establecer el valor actual
-                    $('#tipoCanchaSelectSwal').val(valorJS);
+                    $('#tipoCanchaSelectSwal').val(tipoAnticipoActual);
                     //$('#tipoCanchaSelectSwal option[value="' + idTipoCanchaActual + '"]').prop('selected', true);
 
                 },
                 error: function () {
-                    Swal.fire('Error', 'Hubo un error al cargar las canchas', 'error');
+                    Swal.fire('Error', 'Hubo un error al cargar los tipos de Cancha', 'error');
                 }
             });
             
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            const nuevoIdCancha = $('#idTipoCanchaSeleccionado').val(); // Obtener el valor del campo oculto
-            const nuevoHorarioIni = result.value.nuevoHorarioIni;
-            const nuevoHorarioFin = result.value.nuevoHorarioFin;
-            const nuevoPrecio = result.value.nuevoPrecio;
-            const nuevaDescripcion = result.value.nuevaDescripcion;
+            const nuevoMonto = result.value.nuevoMonto;
+            const nuevaFechaAnticipo = result.value.nuevaFechaAnticipo;
+            const nuevoNoDocumento = result.value.nuevoNoDocumento;
+            const nuevoMotivo = result.value.nuevoMotivo;
+            const nuevoIdTipoCancha = $('#idTipoCanchaSeleccionado').val(); // Obtener el valor del campo oculto
+            
             $.ajax({
                 type: 'POST',
-                url: '/admin/mantenimientos/modificar_tarifa.php',
-                data: { idTarifa: idTarifa, 
-                        nuevoHorarioIni: nuevoHorarioIni,
-                        nuevoHorarioFin: nuevoHorarioFin,
-                        nuevoPrecio: nuevoPrecio,
-                        nuevaDescripcion: nuevaDescripcion,
-                        nuevoIdCancha: nuevoIdCancha },
+                url: '/admin/mantenimientos/modificar_anticipo.php', // Reemplaza con la URL correcta en tu proyecto
+                data: { idAnticipo: idAnticipo, nuevoMonto: nuevoMonto, 
+                        nuevaFechaAnticipo: nuevaFechaAnticipo, nuevoNoDocumento: nuevoNoDocumento,
+                            nuevoMotivo: nuevoMotivo, nuevoIdTipoCancha: nuevoIdTipoCancha },
                 success: function (response) {
                     if (response === 'success') {
-                        Swal.fire('Éxito', 'La tarifa se ha modificado correctamente', 'success').then(() => {
-                            window.location.href = 'tarifa.php';
+                        Swal.fire('Éxito', 'El anticipo se ha modificado correctamente', 'success').then(() => {
+                            window.location.reload();
                         });
                     } else {
-                        Swal.fire('Error', 'Hubo un problema al modificar la tarifa', 'error');
+                        Swal.fire('Error', 'Hubo un problema al modificar el anticipo', 'error');
                     }
                 },
                 error: function () {
@@ -456,9 +518,10 @@ $(document).on('click', '.btn-modificar', function () {
     });
 });
 
+
 // Script para manejar el clic en el botón "Eliminar"
 $(document).on('click', '.btn-eliminar', function () {
-    const idTarifa = $(this).data('id');
+    const idAnticipo = $(this).data('id');
 
     // Mostrar un SweetAlert de confirmación
     Swal.fire({
@@ -474,16 +537,15 @@ $(document).on('click', '.btn-eliminar', function () {
             // El usuario confirmó, enviar solicitud AJAX para eliminar el registro
             $.ajax({
                 type: 'POST',
-                url: '/admin/mantenimientos/eliminar_tarifa.php', // Cambia la URL a la que corresponda en tu proyecto
-                data: { idTarifa: idTarifa },
+                url: '/admin/mantenimientos/eliminar_anticipo.php', // Reemplaza con la URL correcta en tu proyecto
+                data: { idAnticipo: idAnticipo },
                 success: function (response) {
                     if (response === 'success') {
-                        Swal.fire('¡Eliminado!', 'La tarifa ha sido eliminada.', 'success').then(() => {
-                            // Recargar la página o realizar alguna otra acción después de eliminar
+                        Swal.fire('¡Eliminado!', 'El anticipo ha sido eliminada.', 'success').then(() => {
                             window.location.reload();
                         });
                     } else {
-                        Swal.fire('Error', 'Hubo un problema al eliminar la tarifa', 'error');
+                        Swal.fire('Error', 'Hubo un problema al eliminar el anticipo', 'error');
                     }
                 },
                 error: function () {
@@ -500,29 +562,26 @@ $(document).on('click', '.btn-eliminar', function () {
         // Manejar el envío del formulario de creación de rol
         $('#form-crear-rol').submit(function (e) {
             e.preventDefault();
-            const idCancha = $('#idCancha').val();
-            const horaIni = $('#horaini').val();
-            const horaFin = $('#horafin').val();
-            const precio = $('#precio').val();
-            const descripcion = $('#descripcion').val();
-
+            const montoAnticipo = $('#montoAnticipo').val();
+            const fechaAnticipo = $('#fechaAnticipo').val();
+            const noDocumento = $('#noDocumento').val();
+            const motivo = $('#motivo').val();
+            const tipoAnticipo = $('#tipoAnticipo').val();
+            
             // Enviar la solicitud de creación a través de AJAX
             $.ajax({
                 type: 'POST',
-                url: '/admin/mantenimientos/crear_tarifa.php', // Reemplaza con la URL correcta en tu proyecto
-                data: { horaIni: horaIni,
-                        horaFin: horaFin,
-                        precio: precio,
-                        descripcion: descripcion,
-                        idCancha: idCancha },
+                url: '/admin/mantenimientos/crear_anticipo.php', // Reemplaza con la URL correcta en tu proyecto
+                data: { montoAnticipo: montoAnticipo, fechaAnticipo: fechaAnticipo, noDocumento: noDocumento,
+                     motivo: motivo, tipoAnticipo: tipoAnticipo },
                 success: function (response) {
                     if (response === 'success') {
-                        Swal.fire('Éxito', 'La tarifa se ha creado correctamente', 'success').then(() => {
+                        Swal.fire('Éxito', 'El anticipo se ha creado correctamente', 'success').then(() => {
                             // Recargar la página o realizar alguna otra acción después de crear el rol
                             window.location.reload();
                         });
                     } else {
-                        Swal.fire('Error', 'Hubo un problema al crear la tarifa', 'error');
+                        Swal.fire('Error', 'Hubo un problema al crear el anticipo', 'error');
                     }
                 },
                 error: function () {

@@ -1,10 +1,12 @@
 <?php
 session_start();
 $descripcionTipoCancha1 = "";
+$descripcionTipoCancha12 = "";
 $idtc = "";
+$idtc2 = "";
 // Verificar si el usuario ha iniciado sesión
 if (!isset($_SESSION["idUsuario"])) {
-    header("Location: login.php"); // Redirigir a la página de inicio de sesión si no ha iniciado sesión
+    header("Location: /login.php"); // Redirigir a la página de inicio de sesión si no ha iniciado sesión
     exit();
 }
 
@@ -69,7 +71,7 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/custom.css">
-    
+    <link rel="icon" href="/img/logo.png" type="image/x-icon">
     <script src="/dist/index.global.min.js"></script>
     
 
@@ -79,20 +81,45 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 </head>
 <body>
     <!-- Barra de navegación -->
-    <nav class="navbar navbar-expand-lg navbar-light cust">
+    <nav class="navbar navbar-expand-lg navbar-light cust" style="z-index: 1000;" >
   <div class="container">
-    <a class="navbar-brand mx-auto" href="#"><img src="/img/logo.png" alt="Logo" class="img-fluid me-2" style="max-width: 50px;"></a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <a class="navbar-brand mx-auto" href="indexAdmin.php"><img src="/img/logo.png" alt="Logo" class="img-fluid me-2" style="max-width: 50px;"></a>
+    <button class="navbar-toggler btn-orange" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
       <ul class="navbar-nav">
-        <li class="nav-item active">
-          <a class="nav-link" href="reporte_actividad.php">Reporte de visitas</a>
+      <li class="nav-item dropdown"> <!-- Agrega un elemento de menú desplegable -->
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Reportes
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          <a class="dropdown-item" href="reporte_actividad.php">Reporte de visitas</a>
+          <a class="dropdown-item" href="reportes_reservas.php">Reportes de reservas</a>
+          
+          </div>
         </li>
-        <li class="nav-item active">
-          <a class="nav-link" href="/calendario.php">Eventos</a>
+        
+        <?php
+        
+        if (isset($_SESSION["idRol"]) && $_SESSION["idRol"] !== 5) {
+      ?>
+       <li class="nav-item dropdown"> <!-- Agrega un elemento de menú desplegable -->
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Reservas
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          <a class="dropdown-item" href="/reserva.php">Realizar reserva</a>
+          <a class="dropdown-item" href="reservas_aceptadas.php">Reservas aceptadas</a>
+          <a class="dropdown-item" href="reservas_pendientes.php">Reservas pendientes</a>
+          </div>
         </li>
+        
+        <?php
+        
+        }
+        ?>
+       
         <?php
         
           if (isset($_SESSION["idRol"]) && $_SESSION["idRol"] === 1) {
@@ -109,13 +136,22 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
             <a class="dropdown-item" href="cancha.php">Cancha</a>
             <a class="dropdown-item" href="tarifa.php">Tarifa</a>
             <a class="dropdown-item" href="estado_reserva.php">Estado Reserva</a>
+            <a class="dropdown-item" href="cliente.php">Cliente</a>
+            <a class="dropdown-item" href="horario.php">Horario</a>
+            <a class="dropdown-item" href="usuario.php">Usuario</a>
           </div>
         </li>
         <?php }?>
+        
         <li class="nav-item">
           <a class="nav-link" href="/admin/cerrar_sesion.php">Cerrar Sesión</a>
         </li>
+        <!--
+        <li class="nav-item">
+          <a class="nav-link" href="/admin/solicitud-cambio-contrasenia.php">Cambiar contraseña</a>
+        </li>-->
       </ul>
+      
     </div>
   </div>
 </nav>
@@ -233,7 +269,6 @@ $resultados = $conexion->query($consulta);
     </select> !-->
 </td>
 <input type="hidden" id="idTipoCanchaSeleccionado" name="idTipoCanchaSeleccionado">
-
 <td><?php echo $fila["nombre"]; ?></td>
         <td><?php echo $fila["descripcion"]; ?></td>
         <td>
@@ -286,6 +321,7 @@ $resultados = $conexion->query($consulta);
                     while ($filaRol = $resultadosRoles->fetch_assoc()) {
                         $idRol = $filaRol["idTipoCancha"];
                         $descripcionRol = $filaRol["descripcion"];
+
                         echo "<option value='$idRol'>$descripcionRol</option>";
                     }
 
@@ -385,7 +421,7 @@ $(document).on('click', '.btn-modificar', function () {
     const nombreActual = $(this).data('nombre');
     const descripcionActual = $(this).data('descripcion');
     const idTipoCanchaActual = $(this).data('idTipoCancha'); // Obtener el ID actual
-
+    
     //var valorJS = <?php echo json_encode($descripcionTipoCancha1); ?>;
     console.log(valorJS);
 
@@ -401,7 +437,9 @@ $(document).on('click', '.btn-modificar', function () {
             const nuevoNombre = Swal.getPopup().querySelector('#swal-input2').value;
             const nuevaDescripcion = Swal.getPopup().querySelector('#swal-input3').value;
             const nuevoIdTipoCancha = $('#tipoCanchaSelectSwal').val(); // Obtener el valor seleccionado
+            
             $('#idTipoCanchaSeleccionado').val(nuevoIdTipoCancha); // Actualizar el campo oculto
+            
             return { nuevoNombre: nuevoNombre.trim(), nuevaDescripcion: nuevaDescripcion.trim() }
         },
         onOpen: () => {
@@ -420,12 +458,14 @@ $(document).on('click', '.btn-modificar', function () {
                     Swal.fire('Error', 'Hubo un error al cargar los tipos de Cancha', 'error');
                 }
             });
+            
         }
     }).then((result) => {
         if (result.isConfirmed) {
             const nuevoNombre = result.value.nuevoNombre;
             const nuevaDescripcion = result.value.nuevaDescripcion;
             const nuevoIdTipoCancha = $('#idTipoCanchaSeleccionado').val(); // Obtener el valor del campo oculto
+            
             $.ajax({
                 type: 'POST',
                 url: '/admin/mantenimientos/modificar_cancha.php', // Reemplaza con la URL correcta en tu proyecto
@@ -495,7 +535,6 @@ $(document).on('click', '.btn-eliminar', function () {
             
             const nombre = $('#nombre').val();
             const descripcion = $('#descripcion').val();
-
             // Enviar la solicitud de creación a través de AJAX
             $.ajax({
                 type: 'POST',

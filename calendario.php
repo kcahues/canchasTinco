@@ -186,17 +186,9 @@ document.addEventListener('DOMContentLoaded', function() {
       // Hubo un error al procesar la solicitud
       console.log('Error al obtener el evento');
     } else {
-      date = data.date;
-      //console.log(date);
-      //console.log(data.date);
-      // La respuesta contiene la información del evento en formato JSON
-      //console.log('Información del evento:', data);
-      
+      date = data.date;      
       $from = data.time_from;
-      $to   = data.time_to;
-      // Aquí puedes utilizar la información del evento según tus necesidades
-      // Por ejemplo, puedes mostrar los detalles del evento en una ventana emergente
-     
+      $to   = data.time_to;     
 
   // Muestra la información en una ventana emergente de edición
   Swal.fire({
@@ -299,37 +291,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-  //    });
-
-    /*  if (formValues) {
-        
-  const formData = new FormData();
-  formData.append('request_type', 'addEvent2');
-  formData.append('event_id', info.event.id);
-      formData.append('title', title);
-      formData.append('description', description);
-      formData.append('location', location);
-      formData.append('date', date);
-      formData.append('time_from', time_from);
-      formData.append('time_to', time_to);
-
-
-  fetch("eventHandler2.php", {
-    method: "POST",
-    body: formData,
-  })
-  .then(response => response.text())
-      .then(data => {
-        if (data === 'success') {
-          Swal.fire('Reservación actualizada correctamente!', '', 'success');
-          // Refetch events from all sources and rerender
-          calendar.refetchEvents();
-        } else {
-          Swal.fire('Error al actualizar la reservación', '', 'error');
-        }
-      })
-  .catch(console.error);
-}*/
 }
   })
   .catch(error => {
@@ -371,10 +332,10 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
       <ul class="navbar-nav">
         <li class="nav-item active">
-          <a class="nav-link" href="/admin/reporte_actividad.php">Reporte de visitas</a>
+          <a class="nav-link" href="reporte_actividad.php">Reporte de visitas</a>
         </li>
         <li class="nav-item active">
-          <a class="nav-link" href="#">Eventos</a>
+          <a class="nav-link" href="/calendario.php">Eventos</a>
         </li>
         <?php
         
@@ -392,6 +353,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <a class="dropdown-item" href="/admin/cancha.php">Cancha</a>
             <a class="dropdown-item" href="/admin/tarifa.php">Tarifa</a>
             <a class="dropdown-item" href="/admin/estado_reserva.php">Estado Reserva</a>
+            <a class="dropdown-item" href="/admin/cliente.php">Cliente</a>
+            <a class="dropdown-item" href="/admin/horario.php">Horario</a>
+            <a class="dropdown-item" href="/admin/usuario.php">Usuario</a>
           </div>
         </li>
         <?php }?>
@@ -403,9 +367,96 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
 </nav>
 <!-- Contenido principal -->
+<!--<section class="container my-5" >
+<div class="row">
+<h2 class="text-orange">Solicitudes pendientes de procesar</h2>
+</div>
+</section>
+<section class="container my-5" >
+<div class="row">
+<div class="col-md-12">
+<div class="table-responsive">
+    <table class="table table-striped table-dark">
+        <thead>
+            <tr>
+                <th>ID Reserva</th>
+                <th>Usuario que registra</th>
+                <th>Horario</th>
+                <th>ID Cliente</th>
+                <th>Estado Reserva</th>
+                <th>Fecha Reserva</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            // Aquí deberías obtener los datos de la base de datos y mostrarlos en la tabla
+            // Reemplaza estas líneas con tu lógica para obtener y mostrar los datos
+            $conexion2 = new mysqli("srv1107.hstgr.io", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
+            $consulta2 = "SELECT r.idReserva, u.nombre AS usuario, t.horaIni, t.horaFin, CONCAT(c.nombre, ' - Hora Ini: ', t.horaIni, ' - Hora Fin: ', t.horaFin, ' - Precio: ', t.precio) AS horario, 
+            CONCAT(cl.nombre, ' ', cl.apellido) AS cliente, er.descripcion AS estadoReserva, r.fechaReserva 
+            FROM reserva r 
+            INNER JOIN usuario u ON r.idUsuario = u.idUsuario
+            INNER JOIN horario h ON r.idHorario = h.idHorario
+            INNER JOIN cancha c ON h.idCancha = c.idCancha
+            INNER JOIN tarifa t ON h.idTarifa = t.idTarifa
+            INNER JOIN cliente cl ON r.idCliente = cl.idCliente
+            INNER JOIN estadoreserva er ON r.idEstadoReserva = er.idEstadoReserva
+            WHERE r.idEstadoReserva = 1
+            ORDER BY c.idCancha ASC";
+            $result = $conexion2->query($consulta2);
 
+            if ($result->num_rows === 0) {
+              echo "No hay reservas pendientes.";
+          } else {
+              while ($row = $result->fetch_assoc()) {
+                  echo '<tr>';
+                  echo '<td>' . $row['idReserva'] . '</td>';
+                  echo '<td>' . $row['usuario'] . '</td>';
+                  echo '<td>' . $row['horario'] . '</td>';
+                  echo '<td>' . $row['cliente'] . '</td>';
+                  echo '<td>' . $row['estadoReserva'] . '</td>';
+                  echo '<td>' . $row['fechaReserva'] . '</td>';
+                  echo '<td>';
+                  
+                  // Agrega el botón "Modificar" para cada reserva
+                  echo '<button class="btn btn-warning btn-modificar" 
+      data-id="' . $row['idReserva'] . '"
+      data-usuario="' . $row['usuario'] . '"
+      data-horario="' . $row['horario'] . '"
+      data-cliente="' . $row['cliente'] . '"
+      data-fecha-reserva="' . $row['fechaReserva'] . '"
+      data-hora-inicio="' . $row['horaIni'] . '"
+      data-hora-fin="' . $row['horaFin'] . '"
+      data-estado-reserva="' . $row['estadoReserva'] . '"
+      data-title="' . $row['usuario'] . '"
+      data-description="' . $row['cliente'] . '"
+      data-location="' . $row['horario'] . '"
+      data-date="' . $row['fechaReserva'] . '"
+      data-time_from="' . $row['horaIni'] . '"
+      data-time_to="' . $row['horaFin'] . '">
+      Modificar
+      </button>';
+                        
+                  // Agrega el botón "Eliminar" para cada reserva
+                  echo '<form method="post" style="display: inline;">
+                        <input type="hidden" name="id_reserva" value="' . $row['idReserva'] . '">
+                        <button type="submit" name="eliminar_reserva" class="btn btn-danger">Eliminar</button>
+                        </form>';
 
+                  echo '</td>';
+                  echo '</tr>';
+              }
+          }
 
+          $conexion2->close();
+          ?>
+        </tbody>
+    </table>
+</div>
+</div>
+</div>
+</section>-->
 
   
 <section class="container my-5" >

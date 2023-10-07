@@ -73,7 +73,7 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
     <link rel="stylesheet" href="plugin/components/Font Awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="plugin/whatsapp-chat-support.css">
     <script src="/dist/index.global.min.js"></script>
-    
+    <link rel="icon" href="/img/logo.png" type="image/x-icon">
     <!-- Sweetalert2 -->
 <script src="/js/sweetalert2.all.min.js"></script>
 
@@ -83,20 +83,45 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 </head>
 <body>
     <!-- Barra de navegación -->
-    <nav class="navbar navbar-expand-lg navbar-light cust">
+    <nav class="navbar navbar-expand-lg navbar-light cust" style="z-index: 1000;" >
   <div class="container">
-    <a class="navbar-brand mx-auto" href="#"><img src="/img/logo.png" alt="Logo" class="img-fluid me-2" style="max-width: 50px;"></a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <a class="navbar-brand mx-auto" href="indexAdmin.php"><img src="/img/logo.png" alt="Logo" class="img-fluid me-2" style="max-width: 50px;"></a>
+    <button class="navbar-toggler btn-orange" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
       <ul class="navbar-nav">
-        <li class="nav-item active">
-          <a class="nav-link" href="reporte_actividad.php">Reporte de visitas</a>
+      <li class="nav-item dropdown"> <!-- Agrega un elemento de menú desplegable -->
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Reportes
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          <a class="dropdown-item" href="reporte_actividad.php">Reporte de visitas</a>
+          <a class="dropdown-item" href="reportes_reservas.php">Reportes de reservas</a>
+          
+          </div>
         </li>
-        <li class="nav-item active">
-          <a class="nav-link" href="/calendario.php">Eventos</a>
+        
+        <?php
+        
+        if (isset($_SESSION["idRol"]) && $_SESSION["idRol"] !== 5) {
+      ?>
+       <li class="nav-item dropdown"> <!-- Agrega un elemento de menú desplegable -->
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Reservas
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          <a class="dropdown-item" href="/reserva.php">Realizar reserva</a>
+          <a class="dropdown-item" href="reservas_aceptadas.php">Reservas aceptadas</a>
+          <a class="dropdown-item" href="reservas_pendientes.php">Reservas pendientes</a>
+          </div>
         </li>
+        
+        <?php
+        
+        }
+        ?>
+       
         <?php
         
           if (isset($_SESSION["idRol"]) && $_SESSION["idRol"] === 1) {
@@ -113,13 +138,22 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
             <a class="dropdown-item" href="cancha.php">Cancha</a>
             <a class="dropdown-item" href="tarifa.php">Tarifa</a>
             <a class="dropdown-item" href="estado_reserva.php">Estado Reserva</a>
+            <a class="dropdown-item" href="cliente.php">Cliente</a>
+            <a class="dropdown-item" href="horario.php">Horario</a>
+            <a class="dropdown-item" href="usuario.php">Usuario</a>
           </div>
         </li>
         <?php }?>
+        
         <li class="nav-item">
           <a class="nav-link" href="/admin/cerrar_sesion.php">Cerrar Sesión</a>
         </li>
+        <!--
+        <li class="nav-item">
+          <a class="nav-link" href="/admin/solicitud-cambio-contrasenia.php">Cambiar contraseña</a>
+        </li>-->
       </ul>
+      
     </div>
   </div>
 </nav>
@@ -165,8 +199,56 @@ $resultados = $conexion->query($consulta);
 <section class="container my-5 " >
 <div class="row">
   <div class="col-md-12">
-        <!-- Paginación -->
-        
+    <!-- Paginación -->
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center flex-wrap d-flex">
+
+        <!-- Botón "Primera Página" -->
+        <?php if ($paginaActual > 1) : ?>
+            <li class="page-item">
+                <a class="page-link text-orange" href="?pagina=1">Primera</a>
+            </li>
+        <?php endif; ?>
+
+        <!-- Botón "Anterior" -->
+        <?php if ($paginaActual > 1) : ?>
+            <li class="page-item">
+                <a class="page-link text-orange" href="?pagina=<?php echo ($paginaActual - 1); ?>">Anterior</a>
+            </li>
+        <?php endif; ?>
+
+        <!-- Botones de página -->
+        <?php
+        $maxPaginas = 5; // Número máximo de botones de página a mostrar
+        $inicio = max(1, $paginaActual - floor($maxPaginas / 2));
+        $fin = min($inicio + $maxPaginas - 1, $totalPaginas);
+
+        for ($i = $inicio; $i <= $fin; $i++) : ?>
+            <li class="page-item <?php echo ($i == $paginaActual) ? 'active' : ''; ?>">
+                <a class="page-link text-orange" href="?pagina=<?php echo $i; ?>"><?php echo $i; ?></a>
+            </li>
+        <?php endfor; ?>
+
+        <!-- Botón "Siguiente" -->
+        <?php if ($paginaActual < $totalPaginas) : ?>
+            <li class="page-item">
+                <a class="page-link text-orange" href="?pagina=<?php echo ($paginaActual + 1); ?>">Siguiente</a>
+            </li>
+        <?php endif; ?>
+
+        <!-- Botón "Última Página" -->
+        <?php if ($paginaActual < $totalPaginas) : ?>
+            <li class="page-item">
+                <a class="page-link text-orange" href="?pagina=<?php echo $totalPaginas; ?>">Última</a>
+            </li>
+        <?php endif; ?>
+
+    </ul>
+</nav>
+
+
+        <!-- Paginación 
+        <nav aria-label="Page navigation">    
   <ul class="pagination justify-content-center">
             <?php for ($i = 1; $i <= $totalPaginas; $i++) : ?>
                 <li class="page-item <?php echo ($i == $paginaActual) ? 'active' : ''; ?>">
@@ -174,6 +256,7 @@ $resultados = $conexion->query($consulta);
                 </li>
             <?php endfor; ?>
         </ul>
+        </nav>
         <ul class="pagination justify-content-center">
             <?php if ($paginaActual > 1) : ?>
                 <li class="page-item">
@@ -186,7 +269,7 @@ $resultados = $conexion->query($consulta);
                     <a class="page-link text-orange" href="?pagina=<?php echo ($paginaActual + 1); ?>">Siguiente</a>
                 </li>
             <?php endif; ?>
-        </ul>
+        </ul> -->
         </div>  
 </div>
 <div class="row">

@@ -16,16 +16,18 @@ if ($conexion->connect_error) {
 }
 
 // Obtener datos del formulario
-$idCancha = $_POST["idCancha"];
-$nuevoNombre = $_POST["nuevoNombre"];
-$nuevaDescripcion = $_POST["nuevaDescripcion"];
+$idAnticipo = $_POST["idAnticipo"];
+$nuevoMonto = $_POST["nuevoMonto"];
+$nuevaFechaAnticipo = $_POST["nuevaFechaAnticipo"];
+$nuevoNoDocumento = $_POST["nuevoNoDocumento"];
+$nuevoMotivo = $_POST["nuevoMotivo"];
 $nuevoIdTipoCancha = $_POST["nuevoIdTipoCancha"];
 
 
 // Consulta SQL para actualizar la cancha
-$sql = "UPDATE cancha SET nombre = ?, descripcion = ?, idTipoCancha = ? WHERE idCancha = ?";
+$sql = "UPDATE anticipo SET montoAnticipo = ?, fechaAnticipo = ?, noDocumento = ?, motivo = ?, tipoAnticipo = ? WHERE idAnticipo = ?";
 $stmt = $conexion->prepare($sql);
-$stmt->bind_param("ssii", $nuevoNombre, $nuevaDescripcion, $nuevoIdTipoCancha,  $idCancha);
+$stmt->bind_param("ssssii", $nuevoMonto, $nuevaFechaAnticipo, $nuevoNoDocumento, $nuevoMotivo, $nuevoIdTipoCancha,  $idAnticipo);
 
 if ($stmt->execute()) {
     echo "success"; // Éxito, la cancha se actualizó correctamente

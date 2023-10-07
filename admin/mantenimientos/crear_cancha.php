@@ -20,14 +20,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         // Obtener la descripción del nuevo rol desde el formulario
         $idTipoCancha = $_POST["idTipoCancha"];
+        
         $nombre = $_POST["nombre"];
         $descripcion = $_POST["descripcion"];
         
+    
         // Preparar la consulta SQL para insertar el nuevo rol
 
         $consulta = "INSERT INTO cancha (idTipoCancha, nombre, descripcion) VALUES (?, ?, ?)";
         $stmt = $conexion->prepare($consulta);
-        $stmt->bind_param("iss", $idTipoCancha, $nombre, $descripcion);
+        $stmt->bind_param("iss", $idTipoCancha,  $nombre, $descripcion);
 
 
         if ($stmt->execute()) {

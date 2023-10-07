@@ -3,6 +3,7 @@
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Recupera los datos enviados por AJAX
     $idRol = $_POST["idTarifa"];
+    $idCancha = $_POST["nuevoIdCancha"];
     $horaIni = $_POST["nuevoHorarioIni"];
     $horaFin = $_POST["nuevoHorarioFin"];
     $precio  = $_POST["nuevoPrecio"];
@@ -26,9 +27,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Prepara y ejecuta la consulta para actualizar el rol
-    $consulta = "UPDATE tarifa SET horaIni = ?, horaFin = ?, precio = ?, descripcion = ? WHERE idTarifa = ?";
+    $consulta = "UPDATE tarifa SET idCancha = ?, horaIni = ?, horaFin = ?, precio = ?, descripcion = ? WHERE idTarifa = ?";
     $stmt = $conexion->prepare($consulta);
-    $stmt->bind_param("ssssi", $horaIni, $horaFin, $precio, $nuevaDescripcion, $idRol);
+    $stmt->bind_param("issssi", $idCancha, $horaIni, $horaFin, $precio, $nuevaDescripcion, $idRol);
 
     if ($stmt->execute()) {
         echo "success"; // La actualización se realizó con éxito

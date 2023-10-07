@@ -3,7 +3,10 @@ session_start(); // Inicia la sesión si aún no está iniciada
 
 // Si el usuario está autenticado, obtén su ID de usuario
 $idUsuario = isset($_SESSION["idUsuario"]) ? $_SESSION["idUsuario"] : null;
-
+if (isset($_SESSION["idUsuario"])) {
+  header("Location: /admin/indexAdmin.php"); // Redirigir a indexAdmin.php si ya ha iniciado sesión
+  exit();
+}
 // Obtén la página actual y la dirección IP del usuario
 $paginaVisitada = $_SERVER["REQUEST_URI"];
 $direccionIP = $_SERVER["REMOTE_ADDR"];
@@ -33,6 +36,11 @@ $stmt->execute();
 // Cierra la consulta y la conexión
 $stmt->close();
 $conexion->close();
+
+if (isset($_GET['mensaje'])) {
+  echo '<script>alert("El mensaje se ha enviado con éxito."); window.location.href = "#Contacto";</script>';
+  //echo $_GET['mensaje'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -51,6 +59,7 @@ $conexion->close();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" href="plugin/components/Font Awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="plugin/whatsapp-chat-support.css">
+    <link rel="icon" href="/img/logo.png" type="image/x-icon">
     <script src="/dist/index.global.min.js"></script>
     
     <!-- Sweetalert2 -->
@@ -218,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <nav class="navbar navbar-expand-lg navbar-light custom-navbar">
   <div class="container">
     <a class="navbar-brand mx-auto" href="#"><img src="img/logo.png" alt="Logo" class="img-fluid me-2" style="max-width: 50px;"></a>
-    <button class="navbar-toggler btn-outline-orange" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler btn-orange" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
@@ -275,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
               <h1>SAN MIGUEL TINCO</h1>
             </div>
             <div class="col-md-12">
-              <p>Ven a jugar chamuscas con tus amigos, <br>compañeros de trabajo, familia,<br>tenemos para todos</p>
+              <p>Ven a jugar futbol con tus amigos, <br>compañeros de trabajo, familia,<br>tenemos para todos</p>
               <a href="/reserva.php"><button class="btn btn-orange" >Reservar</button></a>
             </div>
           </div>
@@ -288,11 +297,11 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="row">
     <div class="col-md-6">
       <h3>Nuestra Misión</h3>
-      <p>Nuestra misión es proporcionar espacios deportivos de calidad donde las personas puedan disfrutar de actividades físicas y deportivas en un ambiente amigable y seguro.</p>
+      <p>Somos una entidad, que ofrecemos solas esparcimiento para cumplir con las expectativas de nuestros clientes, ofreciéndoles el mejor servicio y atención profesional para que puedan desarrollar sus habilidades físicas en nuestras instalaciones y así poder realizar sus actividades deportivas en un ambiente higiénico, sano, tranquilo y rodeado de naturaleza.</p>
     </div>
     <div class="col-md-6">
       <h3>Nuestra Visión</h3>
-      <p>Nuestra visión es convertirnos en el referente en la comunidad para la práctica de deportes y actividades recreativas, promoviendo la salud, el trabajo en equipo y la diversión.</p>
+      <p>Convertirnos en la mejor opción de nuestros deportistas para que puedan venir a practicar su deporte favorito y que el servicio que se ofrezca sea siempre el mejor para poder llegar a toda persona que le gusta practicar deporte y darnos a conocer en todo Mixco.</p>
     </div>
   </div>
   <div class="row mt-4">
@@ -318,7 +327,7 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>
         </div>
         <div class="card mb-4 bg-dark">
-          <img src="img/servicio/cancha7.webp" class="card-img-top img-fluid" alt="Cancha Fútbol 7">
+          <img src="img/servicio/cancha7.jpg" class="card-img-top img-fluid" alt="Cancha Fútbol 7">
           <div class="card-body">
             <h5 class="card-title text-light">Reserva Cancha Fútbol 7</h5>
             <p class="card-text text-light">Reserva en nuestras canchas de fútbol 7 para poder jugar con tus amigos.</p>
@@ -338,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="card mb-4 bg-dark">
           <img src="img/servicio/cabania.jpg" class="card-img-top img-fluid" alt="Cabañas">
           <div class="card-body">
-            <h5 class="card-title text-light">Ranchos para Actividades</h5>
+            <h5 class="card-title text-light">Áreas para Actividades</h5>
             <p class="card-text text-light">Reserva las áreas verdes para poder tener actividades con tu familia y amigos.</p>
             <a href="#contacto" class="btn btn-primary btn-orange w-100">Contacto</a>
           </div>
@@ -457,8 +466,8 @@ document.addEventListener('DOMContentLoaded', function() {
       <h2 class="text-orange">Ubicación</h2>
       <p>Nos encontramos en la siguiente dirección:</p>
       <address>
-        Dirección de la empresa pendiente<br>
-        De definir para cambiar el texto
+        12 Avenida 11-75 Zona 7 Mixco, Colonia Tinco, Guatemala.<br>
+    
       </address>
       
       <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15441.52393350407!2d-90.60031!3d14.634302!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8589a1c3f811f07b%3A0x68c91e766bb665f7!2sCanchas%20San%20Miguel%20Tinco!5e0!3m2!1ses-419!2sgt!4v1692423899222!5m2!1ses-419!2sgt" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -507,7 +516,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         </div>  
         <div class="wcs_popup_input" 
-            data-number="50254205249"
+            data-number="50240068097"
             data-availability='{ "monday":"08:00-22:00", "tuesday":"08:00-22:00", "wednesday":"08:00-22:00", "thursday":"08:00-22:00", "friday":"08:00-22:00", "saturday":"07:00-22:00", "sunday":"08:00-22:00" }'>
             <input type="text" placeholder="Escribir pregunta!" />
             <i class="fa fa-play"></i>
@@ -539,18 +548,19 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="row">
       <div class="col-md-4">
         <h4>Contacto</h4>
-        <p><i class="fas fa-phone"></i> Llamada telefónica: (502) 5420-5249</p>
-        <p><i class="fab fa-whatsapp"></i> WhatsApp: (502) 5420-5249</p>
+        <p><i class="fas fa-phone"></i> Llamada telefónica: (502) 4006-8097</p>
+        <p><i class="fab fa-whatsapp"></i> WhatsApp: (502) 4006-8097</p>
       </div>
       <div class="col-md-4">
         <h4>Síguenos en redes sociales</h4>
-        <a class="text-white" href="#"><i class="fab fa-facebook"></i> Facebook</a><br>
-        <a class="text-white" href="#"><i class="fab fa-instagram"></i> Instagram</a>
+        <a class="text-white" href="https://www.facebook.com/p/Canchas-San-Miguel-Tinco-100084386470661/"><i class="fab fa-facebook"></i> Facebook</a><br>
+        <a class="text-white" href="https://www.instagram.com/canchassanmiguel/?hl=en"><i class="fab fa-instagram"></i> Instagram</a>
       </div>
       <div class="col-md-4">
         <h4>Horario de atención</h4>
-        <p>Lunes a Viernes: 9:00 AM - 6:00 PM</p>
-        <p>Sábado y Domingo: Cerrado</p>
+        <p>Lunes a Domingo de 08:00 a 20:00 horas vía telefónica y Whatsapp</p>
+        <h4>Horario de canchas</h4>
+        <p>Lunes a Domingo de 06:00 a 23:00 horas</p>
       </div>
     </div>
   </div>

@@ -15,7 +15,7 @@ if (!isset($_SESSION["idUsuario"])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canchas</title>
+    <title>Reservas aceptadas</title>
     <!-- Incluir los estilos de Bootstrap -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -32,7 +32,7 @@ if (!isset($_SESSION["idUsuario"])) {
 </head>
 <body>
     <!-- Barra de navegación -->
-<nav class="navbar navbar-expand-lg navbar-light cust" style="z-index: 1000;" >
+    <nav class="navbar navbar-expand-lg navbar-light cust" style="z-index: 1000;" >
   <div class="container">
     <a class="navbar-brand mx-auto" href="indexAdmin.php"><img src="/img/logo.png" alt="Logo" class="img-fluid me-2" style="max-width: 50px;"></a>
     <button class="navbar-toggler btn-orange" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -130,10 +130,12 @@ if (!isset($_SESSION["idUsuario"])) {
         </thead>
         <tbody>
             <?php
-            
+            date_default_timezone_set('America/Guatemala');
+            $fechaLocal = date('Y-m-d');
+            echo  $fechaLocal;
             $conexion2 = new mysqli("srv1107.hstgr.io", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
-            $consulta2 = "SELECT r.idReserva, u.nombre AS usuario, t.horaIni, t.horaFin, CONCAT(c.nombre, ' - Hora Ini: ', r.time_from, ' - Hora Fin: ', r.time_to, ' - Precio: ', t.precio) AS horario, 
-            CONCAT(cl.nombre, ' ', cl.apellido) AS cliente, er.descripcion AS estadoReserva, r.fechaReserva 
+           $consulta2 = "SELECT r.idReserva, u.nombre AS usuario, t.horaIni, t.horaFin, CONCAT(c.nombre, ' - Hora Ini: ', r.time_from, ' - Hora Fin: ', r.time_to, ' - Precio: ', t.precio) AS horario, 
+            CONCAT(cl.nombre, ' ', cl.apellido) AS cliente, er.descripcion AS estadoReserva, r.date, r.fechaReserva 
             FROM reserva r 
             INNER JOIN usuario u ON r.idUsuario = u.idUsuario
             INNER JOIN horario h ON r.idHorario = h.idHorario
@@ -141,8 +143,10 @@ if (!isset($_SESSION["idUsuario"])) {
             INNER JOIN tarifa t ON h.idTarifa = t.idTarifa
             INNER JOIN cliente cl ON r.idCliente = cl.idCliente
             INNER JOIN estadoreserva er ON r.idEstadoReserva = er.idEstadoReserva
-            WHERE r.idEstadoReserva = 1
+            WHERE ( r.idEstadoReserva = 3 or r.idEstadoReserva = 4 ) 
+            and  r.date >= '$fechaLocal'
             ORDER BY r.idReserva ASC";
+            
             $result = $conexion2->query($consulta2);
 
             if ($result->num_rows === 0) {
@@ -155,14 +159,14 @@ if (!isset($_SESSION["idUsuario"])) {
                     echo '<td>' . $row['horario'] . '</td>';
                     echo '<td>' . $row['cliente'] . '</td>';
                     echo '<td>' . $row['estadoReserva'] . '</td>';
-                    echo '<td>' . $row['fechaReserva'] . '</td>';
+                    echo '<td>' . $row['date'] . '</td>';
                     echo '<td>';
                     
                     // Botón "Modificar" que redirige a la página de modificación con los datos necesarios
                     echo '<a href="/admin/mantenimientos/modificar_reserva.php?id=' . $row['idReserva'] . '" class="btn btn-warning">Modificar</a>';
                     
                     // Botón "Eliminar" que redirige a la página de eliminación con los datos necesarios
-                    //echo '<a href="/admin/mantenimientos/eliminar_reserva.php?id=' . $row['idReserva'] . '" class="btn btn-danger">Eliminar</a>';
+                    echo '<a href="/admin/mantenimientos/eliminar_reserva.php?id=' . $row['idReserva'] . '" class="btn btn-danger">Eliminar</a>';
         
                     echo '</td>';
                     echo '</tr>';

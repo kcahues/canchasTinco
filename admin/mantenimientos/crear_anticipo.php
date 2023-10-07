@@ -9,7 +9,7 @@ if (!isset($_SESSION["idUsuario"])) {
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Verificar si se recibió la descripción del nuevo rol
-    if (isset($_POST["descripcion"]) && isset($_POST["horaIni"]) && isset($_POST["horaFin"]) && isset($_POST["precio"])) {
+    if (isset($_POST["motivo"])) {
         // Conexión a la base de datos
         $conexion = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
 
@@ -19,16 +19,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         // Obtener la descripción del nuevo rol desde el formulario
-        $horaIni = $_POST["horaIni"];
-        $horaFin = $_POST["horaFin"];
-        $precio = $_POST["precio"];
-        $descripcion = $_POST["descripcion"];
-        $idCancha = $_POST["idCancha"];
-
+        $montoAnticipo = $_POST["montoAnticipo"];
+        $fechaAnticipo = $_POST["fechaAnticipo"];
+        $tipoAnticipo = $_POST["tipoAnticipo"];
+        
+        $noDocumento = $_POST["noDocumento"];
+        $motivo = $_POST["motivo"];
+        
+    
         // Preparar la consulta SQL para insertar el nuevo rol
-        $consulta = "INSERT INTO tarifa (idCancha, horaIni, horaFin, precio, descripcion) VALUES (?, ?, ?, ?, ?)";
+
+        $consulta = "INSERT INTO anticipo (montoAnticipo, fechaAnticipo, tipoAnticipo, noDocumento,
+                                motivo) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conexion->prepare($consulta);
-        $stmt->bind_param("issss", $idCancha, $horaIni, $horaFin, $precio, $descripcion);
+        $stmt->bind_param("ssiss", $montoAnticipo,  $fechaAnticipo, $tipoAnticipo, $noDocumento, $motivo);
+
 
         if ($stmt->execute()) {
             // Éxito: el rol se ha creado correctamente
@@ -47,6 +52,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 } else {
     // Redireccionar si la solicitud no es POST
-    header("Location: tarifa.php");
+    header("Location: anticipo.php");
     exit();
 }

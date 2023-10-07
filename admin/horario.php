@@ -2,6 +2,8 @@
 session_start();
 $descripcionTipoCancha1 = "";
 $idtc = "";
+$descripcionTipoCancha12 = "";
+$idtc2 = "";
 // Verificar si el usuario ha iniciado sesión
 if (!isset($_SESSION["idUsuario"])) {
     header("Location: login.php"); // Redirigir a la página de inicio de sesión si no ha iniciado sesión
@@ -69,7 +71,7 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/custom.css">
-    
+    <link rel="icon" href="/img/logo.png" type="image/x-icon">
     <script src="/dist/index.global.min.js"></script>
     
 
@@ -79,20 +81,45 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 </head>
 <body>
     <!-- Barra de navegación -->
-    <nav class="navbar navbar-expand-lg navbar-light cust">
+    <nav class="navbar navbar-expand-lg navbar-light cust" style="z-index: 1000;" >
   <div class="container">
-    <a class="navbar-brand mx-auto" href="#"><img src="/img/logo.png" alt="Logo" class="img-fluid me-2" style="max-width: 50px;"></a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <a class="navbar-brand mx-auto" href="indexAdmin.php"><img src="/img/logo.png" alt="Logo" class="img-fluid me-2" style="max-width: 50px;"></a>
+    <button class="navbar-toggler btn-orange" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
       <ul class="navbar-nav">
-        <li class="nav-item active">
-          <a class="nav-link" href="reporte_actividad.php">Reporte de visitas</a>
+      <li class="nav-item dropdown"> <!-- Agrega un elemento de menú desplegable -->
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Reportes
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          <a class="dropdown-item" href="reporte_actividad.php">Reporte de visitas</a>
+          <a class="dropdown-item" href="reportes_reservas.php">Reportes de reservas</a>
+          
+          </div>
         </li>
-        <li class="nav-item active">
-          <a class="nav-link" href="/calendario.php">Eventos</a>
+        
+        <?php
+        
+        if (isset($_SESSION["idRol"]) && $_SESSION["idRol"] !== 5) {
+      ?>
+       <li class="nav-item dropdown"> <!-- Agrega un elemento de menú desplegable -->
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Reservas
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          <a class="dropdown-item" href="/reserva.php">Realizar reserva</a>
+          <a class="dropdown-item" href="reservas_aceptadas.php">Reservas aceptadas</a>
+          <a class="dropdown-item" href="reservas_pendientes.php">Reservas pendientes</a>
+          </div>
         </li>
+        
+        <?php
+        
+        }
+        ?>
+       
         <?php
         
           if (isset($_SESSION["idRol"]) && $_SESSION["idRol"] === 1) {
@@ -109,13 +136,22 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
             <a class="dropdown-item" href="cancha.php">Cancha</a>
             <a class="dropdown-item" href="tarifa.php">Tarifa</a>
             <a class="dropdown-item" href="estado_reserva.php">Estado Reserva</a>
+            <a class="dropdown-item" href="cliente.php">Cliente</a>
+            <a class="dropdown-item" href="horario.php">Horario</a>
+            <a class="dropdown-item" href="usuario.php">Usuario</a>
           </div>
         </li>
         <?php }?>
+        
         <li class="nav-item">
           <a class="nav-link" href="/admin/cerrar_sesion.php">Cerrar Sesión</a>
         </li>
+        <!--
+        <li class="nav-item">
+          <a class="nav-link" href="/admin/solicitud-cambio-contrasenia.php">Cambiar contraseña</a>
+        </li>-->
       </ul>
+      
     </div>
   </div>
 </nav>

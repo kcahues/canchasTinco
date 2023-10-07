@@ -7,7 +7,7 @@ if (!isset($_SESSION["idUsuario"])) {
     $flag = false;
 }
 // Si el usuario está autenticado, obtén su ID de usuario
-$idUsuario = isset($_SESSION["idUsuario"]) ? $_SESSION["idUsuario"] : null;
+$idUsuario = isset($_SESSION["idUsuario"]) ? $_SESSION["idUsuario"] : 1;
 
 // Obtén la página actual y la dirección IP del usuario
 $paginaVisitada = $_SERVER["REQUEST_URI"];
@@ -20,11 +20,164 @@ $consulta = "INSERT INTO registroactividad (idUsuario, fechaHora, paginaVisitada
 $stmt = $conexion->prepare($consulta);
 $stmt->bind_param("iss", $idUsuario, $paginaVisitada, $direccionIP);
 
+$query = "SELECT idCancha, descripcion FROM cancha";
+$resultado = $conexion->query($query);
+
 $stmt->execute();
 
 // Cierra la consulta y la conexión
 $stmt->close();
 $conexion->close();
+
+// Función para validar un número de teléfono de Guatemala
+function validarNumeroGuatemala($numero) {
+    // Expresión regular para validar un número de teléfono de Guatemala
+    $patron = "/^(?:502)?\s*(?:\d\s*){8}$/";
+
+    // Utiliza la función preg_match para comprobar si el número coincide con el patrón
+    return preg_match($patron, $numero);
+}
+$nombre = "";
+$telefono = "";
+$hora_inicio = "";
+$fecha = "";
+$email = "";
+$tipoCancha = "";
+$idCliente = "";
+$idC = "";
+// Verifica si se ha enviado el formulario
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $conexion2 = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
+    $conexion3 = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
+    // Obtén el número de teléfono del formulario
+    //$telefono = $_POST["telefono"];
+  //  $email = $_POST["email"];
+    //$telefono = str_replace(' ', '', $_POST["telefono"]);
+    
+    $nombre = $_POST["nombre"];
+    $telefono = str_replace(' ', '', $_POST["telefono"]);
+    $hora_inicio = $_POST["hora_inicio"];
+    $fecha = $_POST["fecha"];
+    $email = $_POST["email"];
+    $tipoCancha = $_POST["tipoCancha"];
+    
+    $consultaCliente = "SELECT idCliente FROM cliente WHERE telefono = ? OR correo = ?";
+        $stmtCliente = $conexion2->prepare($consultaCliente);
+        $stmtCliente->bind_param("ss", $telefono, $email);
+        $stmtCliente->execute();
+        $stmtCliente->bind_result($idCliente);
+        //echo $idCliente;
+        //$stmtCliente->store_result();
+        
+        
+
+        $inserta = "INSERT INTO cliente ( nombre, correo, telefono) VALUES (?, ?, ?)";
+        $stmtCliente2 = $conexion3->prepare($inserta);
+        $stmtCliente2->bind_param("sss", $nombre,$email, $telefono);
+        
+
+    // Valida el número de teléfono
+    if (!validarNumeroGuatemala($telefono)) {
+        $mensajeError = "El número de teléfono no es válido. Por favor, introduce un número de teléfono de Guatemala válido.";
+    } else {
+        
+        // Verificar si el teléfono o correo ya existen en la tabla Cliente
+        if ($stmtCliente->fetch()) {
+            // El correo o teléfono existe en la tabla cliente, y $idCliente contiene el valor
+            //echo "entro";
+            //echo $idCliente;
+            $idC = $idCliente;
+        } else {
+            // El correo o teléfono no existe en la tabla cliente
+          //  $mensajeError = "El número de teléfono o correo electrónico ya están registrados en la base de datos." . $idCliente;
+            //Inserta el cliente nuevo
+            $stmtCliente2->execute();
+            $stmtCliente2->store_result();
+            $idC = $stmtCliente2->insert_id;
+            
+        }
+        
+      /*  if ($stmtCliente->num_rows === 0) {
+           // $stmtCliente->bind_result($idCliente); // Vincular el resultado a una variable
+           // $stmtCliente->fetch(); // Obtener el valor de idCliente
+    
+            // El teléfono o correo ya existen en la tabla Cliente
+           
+        } else {
+
+            
+        }*/
+    }
+    $idHorario = "";
+    //Sigue el proceso de creacion
+    if (empty($mensajeError)) {
+        //No hay error y procede
+        $conexion5 = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco"); 
+        $sql_tarifa = "SELECT idTarifa
+               FROM tarifa
+               WHERE idCancha = '$tipoCancha' and '$hora_inicio' BETWEEN horaIni AND horaFin";
+
+        $result_tarifa = $conexion5->query($sql_tarifa);
+
+        if ($result_tarifa->num_rows > 0) {
+            $row_tarifa = $result_tarifa->fetch_assoc();
+            $idTarifa = $row_tarifa["idTarifa"];
+
+            // Paso 2: Buscar idHorario en la tabla horario usando idTarifa
+            $sql_horario = "SELECT idHorario
+                            FROM horario
+                            WHERE idCancha = $tipoCancha 
+                            AND   idTarifa = $idTarifa";
+
+            $result_horario = $conexion5->query($sql_horario);
+
+            if ($result_horario->num_rows > 0) {
+                $row_horario = $result_horario->fetch_assoc();
+                $idHorario = $row_horario["idHorario"];
+             //   echo "El idHorario es: " . $idHorario;
+            } else {
+             //   echo "No se encontró un idHorario para la hora especificada.";
+            }
+        } else {
+           // echo "No se encontró una tarifa para la hora especificada.";
+        }
+
+
+
+        // Sumar 1 hora
+        $hora_fin = date("H:i:s", strtotime($hora_inicio . " +1 hour"));
+        $estadoReserva = 1;
+        //Nueva conexión para crear solicitudes de reservas
+        $conexion4 = new mysqli("localhost", "u340286682_adminTinco", "=Uj03A?*", "u340286682_canchas_tinco");
+        $inserta2 = "INSERT INTO reserva ( idUsuario, idHorario, idCliente, idEstadoReserva, fechaReserva, time_from, time_to, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmtCliente3 = $conexion4->prepare($inserta2);
+        $stmtCliente3->bind_param("iiiissss", $idUsuario,$idHorario, $idC,$estadoReserva,$fecha,$hora_inicio,$hora_fin, $fecha);
+        $stmtCliente3->execute();
+        $stmtCliente3->store_result();
+        $idS = $stmtCliente3->insert_id;
+        $stmtCliente3->close();
+        $conexion4->close();
+        $conexion5->close();
+
+            
+        $nombre = "";
+        $telefono = "";
+        $hora_inicio = "";
+        $fecha = "";
+        $email = "";
+        $tipoCancha = "";
+        $mensajeExito = "Se ha generado tu solicitud de reservacion con número: " . $idS;
+    }
+    $stmtCliente2->close();
+    
+    $stmtCliente->close();
+    $conexion2->close();
+    $conexion3->close();
+    
+}
+date_default_timezone_set('America/Guatemala'); // Establece la zona horaria a la de Guatemala o la que necesites
+
+$fecha = (!empty($fecha)) ? $fecha : date('Y-m-d');
 
 ?>
 <!DOCTYPE html>
@@ -42,184 +195,232 @@ $conexion->close();
     <link rel="stylesheet" href="plugin/components/Font Awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="plugin/whatsapp-chat-support.css">
     <script src="/dist/index.global.min.js"></script>
-    
-    <!-- Sweetalert2 -->
-<script src="/js/sweetalert2.all.min.js"></script>
+    <link rel="icon" href="/img/logo.png" type="image/x-icon">
 
-<!-- Include FullCalendar JS & CSS library -->
-<link href="/js/fullcalendar/lib/main.css" rel="stylesheet" />
-<script src="/js/fullcalendar/lib/main.js"></script>
+    <!-- Sweetalert2 -->
+    <script src="/js/sweetalert2.all.min.js"></script>
+
+    <!-- Include FullCalendar JS & CSS library -->
+    <link href="/js/fullcalendar/lib/main.css" rel="stylesheet" />
+    <script src="/js/fullcalendar/lib/main.js"></script>
     
 
     <style>
-        
         body {
             background: linear-gradient(45deg, #000 50%, #ff6600 50%);
             background-size: cover;
             background-attachment: fixed;
             color: #fff;
-            /*display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;*/
         }
 
         .container2 {
-            background-color: rgba(0, 0, 0, 0.7); /* Fondo del formulario transparente */
-            backdrop-filter: blur(10px); /* Efecto de desenfoque para el fondo */
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
             padding: 20px;
             border-radius: 10px;
-            
+            max-width: 800px; /* Cambio: Limitar el ancho del contenedor */
+            margin: 0 auto; /* Centrar el contenedor */
         }
 
-        .container-content{
-            /*margin-top: 300px;*/
+        .container-content {
         }
 
         form {
             margin-top: 20px;
         }
         button.btn-primary {
-            width: 100%; /* Establece el ancho al 100% del contenedor padre (form) */
+            width: 100%;
         }
     </style>
 </head>
 <body>
 
     <!-- Barra de navegación -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark cust">
-       <div class="container">
-            <!-- Logo -->
-            <a class="navbar-brand mx-auto" href="#">
-                <img src="/img/logo.png" alt="Logo" class="img-flud me-2" width="50">
-            </a>
-            
-            <!-- Toggler para dispositivos móviles -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <!-- Opciones de navegación -->
-            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Inicio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Acerca de</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Servicios</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Contacto</a>
-                    </li>
-                </ul>
-           </div>
-        </div>
-    </nav>
-    <section class="container2 my-5" >
+    <nav class="navbar navbar-expand-lg navbar-light cust" style="z-index: 1000;" >
+  <div class="container">
+    <a class="navbar-brand mx-auto" href="index.php"><img src="img/logo.png" alt="Logo" class="img-fluid me-2" style="max-width: 50px;"></a>
+    <button class="navbar-toggler btn-orange" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <?php 
+        if (!isset($_SESSION["idUsuario"])) {
+         
+        ?>
+
+      <ul class="navbar-nav">
+        <li class="nav-item active">
+          <a class="nav-link" href="index.php#SobreNosotros">Sobre Nosotros</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="index.php#Servicio">Servicios</a>
+        </li>
         
-    <div class="row">
-    <div class="container">
-    <div class="container-content">
-        <div class="text-center">
-            <!-- Agregar tu logo aquí -->
-            <h1>Solicitud de reservacion</h1>
-            <img src="/img/logo.png" alt="Logo" class="img-fluid" width="100">
+        <li class="nav-item">
+          <a class="nav-link" href="index.php#Contacto">Contacto</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="index.php#Tarifa">Tarifas</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="index.php#Disponibilidad">Disponibilidad</a>
+          </li>
+        </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="login.php">Login</a>
+            </li>
+          </ul>
+        <?php }else{?>
+            <ul class="navbar-nav">
+            <li class="nav-item dropdown"> <!-- Agrega un elemento de menú desplegable -->
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Reportes
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          <a class="dropdown-item" href="/admin/reporte_actividad.php">Reporte de visitas</a>
+          <a class="dropdown-item" href="/admin/reportes_reservas.php">Reportes de reservas</a>
+          
+          </div>
+        </li>
+        
+        <?php
+        
+        if (isset($_SESSION["idRol"]) && $_SESSION["idRol"] !== 5) {
+      ?>
+       <li class="nav-item dropdown"> <!-- Agrega un elemento de menú desplegable -->
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Reservas
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          <a class="dropdown-item" href="/reserva.php">Realizar reserva</a>
+          <a class="dropdown-item" href="/admin/reservas_aceptadas.php">Reservas aceptadas</a>
+          <a class="dropdown-item" href="/admin/reservas_pendientes.php">Reservas pendientes</a>
+          </div>
+        </li>
+        
+        <?php
+        
+        }
+        ?>
+       
+        <?php
+        
+          if (isset($_SESSION["idRol"]) && $_SESSION["idRol"] === 1) {
+        ?>
+        <li class="nav-item dropdown"> <!-- Agrega un elemento de menú desplegable -->
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Mantenimiento
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            
+            <a class="dropdown-item" href="/admin/rol.php">Roles</a>
+            <a class="dropdown-item" href="/admin/tipo_cancha.php">Tipo de canchas</a>
+            <a class="dropdown-item" href="/admin/tipo_anticipo.php">Tipo de anticipos</a>
+            <a class="dropdown-item" href="/admin/cancha.php">Cancha</a>
+            <a class="dropdown-item" href="/admin/tarifa.php">Tarifa</a>
+            <a class="dropdown-item" href="/admin/estado_reserva.php">Estado Reserva</a>
+            <a class="dropdown-item" href="/admin/cliente.php">Cliente</a>
+            <a class="dropdown-item" href="/admin/horario.php">Horario</a>
+            <a class="dropdown-item" href="/admin/usuario.php">Usuario</a>
+          </div>
+        </li>
+        <?php }?>
+        
+        <li class="nav-item">
+          <a class="nav-link" href="/admin/cerrar_sesion.php">Cerrar Sesión</a>
+        </li>
+        <!--
+        <li class="nav-item">
+          <a class="nav-link" href="/admin/solicitud-cambio-contrasenia.php">Cambiar contraseña</a>
+        </li>-->
+      </ul>
+        <?php }?>
+    </div>
+  </div>
+</nav>
+    <section class="container2 my-5" >
+        <div class="row">
+            <div class="container">
+                <div class="container-content">
+                    <div class="text-center">
+                        <h1>Solicitud de reservación</h1>
+                        <img src="/img/logo.png" alt="Logo" class="img-fluid" width="100">
+                    </div>
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre de quien reserva</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Escribe tu nombre" value="<?php echo $nombre; ?>">
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="hora_inicio" class="form-label">Hora de Inicio</label>
+                                <select class="form-select" id="hora_inicio" name="hora_inicio">
+                                    <!-- Las opciones de hora se generan automáticamente a través de JavaScript -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fecha" class="form-label">Fecha</label>
+                            <input type="date" class="form-control" id="fecha" name="fecha" value="<?php echo $fecha; ?>" min="<?php echo date('Y-m-d'); ?>">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Escribe tu correo" value="<?php echo $email; ?>" >
+                        </div>
+                        <div class="mb-3">
+                            <label for="telefono" class="form-label">Número de Teléfono</label>
+                            <input type="tel" class="form-control" id="telefono" name="telefono"  value="<?php echo $telefono; ?>" placeholder="Escribe tu número de teléfono" required>
+                        </div>
+                        <?php 
+                            if ($resultado->num_rows > 0) {
+                                // Crear el elemento select con las opciones de la base de datos
+                                echo '<div class="mb-3">';
+                                echo '<label for="tipoCancha" class="form-label">Tipo de Cancha</label>';
+                                echo '<select class="form-select" id="tipoCancha" name="tipoCancha">';
+                            
+                                while ($fila = $resultado->fetch_assoc()) {
+                                    $idCancha = $fila["idCancha"];
+                                    $descripcion = $fila["descripcion"];
+                                    echo '<option value="' . $idCancha . '">' . $descripcion . '</option>';
+                                }
+                            
+                                echo '</select>';
+                                echo '</div>';
+                            } else {
+                                echo "No se encontraron resultados en la tabla 'cancha'.";
+                            }
+                            
+                            // Cerrar la conexión a la base de datos
+                            //$conexion->close();
+                            ?>
+                        
+                        
+                       <!-- <div class="mb-3">
+                            <label for="tipoCancha" class="form-label">Tipo de Cancha</label>
+                            <select class="form-select" id="tipoCancha">
+                                <option value="Futbol5">Futbol 5</option>
+                                <option value="Futbol7">Futbol 7</option>
+                                <option value="Tenis">Tenis</option>
+                            </select>
+                        </div> -->
+                        
+                        <button type="submit" class="btn btn-primary btn-orange">Guardar</button>
+                    </form>
+                    <?php
+                    // Mostrar mensajes de éxito o error
+                    if (isset($mensajeExito)) {
+                        echo '<div class="alert alert-success" role="alert">' . $mensajeExito . '</div>';
+                    }
+                    if (isset($mensajeError)) {
+                        echo '<div class="alert alert-danger" role="alert">' . $mensajeError . '</div>';
+                    }
+                    // Mostrar la hora local del cliente
+                    echo '<p>Hora local del cliente: <span id="horaLocal"></span></p>';
+                    ?>
+                </div>
+            </div>
         </div>
-        <form>
-            <div class="mb-3">
-                <label for="nombre" class="form-label">Nombre de quien reserva</label>
-                <input type="text" class="form-control" id="nombre" placeholder="Escribe tu nombre">
-            </div>
-            <div class="row mb-3">
-                <div class="col">
-                    <label for="hora_inicio" class="form-label">Hora de Inicio</label>
-                    <select class="form-select" id="hora_inicio">
-                        <option value="00">00:00</option>
-                        <option value="01">01:00</option>
-                        <option value="02">02:00</option>
-                        <option value="03">03:00</option>
-                        <option value="04">04:00</option>
-                        <option value="05">05:00</option>
-                        <option value="06">06:00</option>
-                        <option value="07">07:00</option>
-                        <option value="08">08:00</option>
-                        <option value="09">09:00</option>
-                        <option value="10">10:00</option>
-                        <option value="11">11:00</option>
-                        <option value="12">12:00</option>
-                        <option value="13">13:00</option>
-                        <option value="14">14:00</option>
-                        <option value="15">15:00</option>
-                        <option value="16">16:00</option>
-                        <option value="17">17:00</option>
-                        <option value="18">18:00</option>
-                        <option value="19">19:00</option>
-                        <option value="20">20:00</option>
-                        <option value="21">21:00</option>
-                        <option value="22">22:00</option>
-                        <!-- Agrega más opciones según tus necesidades -->
-                        <option value="23">23:00</option>
-                    </select>
-                </div>
-            </div>
-            <div class="mb-3">
-                <label for="fecha" class="form-label">Fecha</label>
-                <input type="date" class="form-control" id="fecha">
-            </div>
-            <div class="mb-3">
-                <label for="email" class="form-label">Correo Electrónico</label>
-                <input type="email" class="form-control" id="email" placeholder="Escribe tu correo">
-            </div>
-            <div class="mb-3">
-                <label for="telefono" class="form-label">Numero de telefono</label>
-                <input type="phone" class="form-control" id="telefono" placeholder="Escribe tu telefono">
-            </div>
-            <div class="mb-3">
-                <label for="tipoCancha" class="form-label">Tipo de Cancha</label>
-                <select class="form-select" id="tipoCancha">
-                    <option value="Futbol5">Futbol 5</option>
-                    <option value="Futbol7">Futbol 7</option>
-                    <option value="Tenis">Tenis</option>
-                </select>
-            </div>
-            <?php
-// Verificar si el usuario ha iniciado sesión
-if ($flag) {
-?>
-            <div class="mb-3">
-                <label for="estado" class="form-label">Estado</label>
-                <div class="row">
-                
-                <div class="col-8">
-                <select class="form-select" id="estado">
-                    <option value="solicitado" style="background-color: purple; color: white;">Solicitado</option>
-                    <option value="pendiente" style="background-color: orange; color: white;">Pendiente</option>
-                    <option value="aprobado" style="background-color: green; color: white;">Aprobado</option>
-                    <option value="cancelado" style="background-color: red; color: white;">Cancelado</option>
-                </select>
-                </div>
-                <div class="col">
-                <input type="text" class="form-control col-auto" id="estadoInput" readonly>
-                </div>    
-            </div>
-            </div>
-            <?php
-// Verificar si el usuario ha iniciado sesión
-}
-?>
-            <div class="mb-3">
-                <label for="telefono" class="form-label">Número de Teléfono</label>
-                <input type="tel" class="form-control" id="telefono" placeholder="Escribe tu número de teléfono">
-            </div>
-            <button type="submit" class="btn btn-primary btn-orange">Guardar</button>
-        </form>
-    </div>
-    </div>
-    </div>
     </section>
     <!-- Agregar los enlaces a las bibliotecas de Bootstrap y jQuery (necesarias para Bootstrap) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -232,67 +433,62 @@ if ($flag) {
 <script src="plugin/components/jQuery/jquery-1.11.3.min.js"></script>
 <script src="plugin/components/moment/moment.min.js"></script>
 <script src="plugin/components/moment/moment-timezone-with-data.min.js"></script> <!-- spanish language (es) -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
     <script>
-    // Función para validar la hora de inicio y fin
-    function validarHoras() {
-        // Obtén los valores de las horas de inicio y fin
-        var horaInicio = document.getElementById("hora_inicio").value;
-        var horaFin = document.getElementById("hora_fin").value;
-
-        // Convierte los valores en objetos de fecha
-        var fechaInicio = new Date("1970-01-01T" + horaInicio + ":00Z");
-        var fechaFin = new Date("1970-01-01T" + horaFin + ":00Z");
-
-        // Compara las fechas
-        if (fechaInicio >= fechaFin) {
-            // Muestra un mensaje de error
-            alert("La hora de inicio debe ser menor que la hora de fin.");
-            return false; // Evita que el formulario se envíe
-        }
-
-        return true; // Permite que el formulario se envíe si todo está correcto
+    // Obtener la hora local del cliente y mostrarla
+    function mostrarHoraLocal() {
+        const horaLocal = new Date().toLocaleTimeString();
+        document.getElementById("horaLocal").textContent = horaLocal;
     }
 
-    // Agrega un evento de submit al formulario
-    document.querySelector("form").addEventListener("submit", function (e) {
-        if (!validarHoras()) {
-            e.preventDefault(); // Evita que el formulario se envíe si la validación falla
-        }
-    });
-        
-        function actualizarColorDeFondo() {
-            var estadoSeleccionado = document.getElementById("estado").value;
-            var container = document.getElementById("estadoInput");
+    // Llamar a la función para mostrar la hora local al cargar la página
+    mostrarHoraLocal();
 
-            switch (estadoSeleccionado) {
-                case "solicitado":
-                    container.style.backgroundColor = "purple";
-                    break;
-                case "pendiente":
-                    container.style.backgroundColor = "orange";
-                    break;
-                case "aprobado":
-                    container.style.backgroundColor = "green";
-                    break;
-                case "cancelado":
-                    container.style.backgroundColor = "red";
-                    break;
-                default:
-                    container.style.backgroundColor = "transparent";
-                    break;
-            }
-        }
-
-        // Agrega un evento de cambio al campo de selección
-        document.getElementById("estado").addEventListener("change", actualizarColorDeFondo);
-
-        // Llama a la función para establecer el color de fondo inicial
-        actualizarColorDeFondo();
+    // Agregar un temporizador para actualizar la hora local cada segundo
+    setInterval(mostrarHoraLocal, 1000);
     
-</script>
-</body>
+    // Función para actualizar las opciones de hora según la fecha seleccionada
+    function actualizarHoras() {    
+        let vl = "";
+        vl = "<?php echo $hora_inicio; ?>";
+        let f1 = "<?php echo $fecha; ?>"
+        //console.log(vl);
+        const fechaSeleccionada = new Date(document.getElementById("fecha").value);
 
+        const horaInicioSelect = document.getElementById("hora_inicio");
+
+        // Calcula la hora de inicio permitida (si la fecha es hoy)
+        const horaActual = new Date().getHours();
+        let horaInicioPermitida = "";
+        
+            horaInicioPermitida = 5; // Hora de inicio predeterminada
+            let ft = new Date();
+        ft.setDate(ft.getDate() - 1);
+        //new Date().toDateString()
+        if (fechaSeleccionada.toDateString() === ft.toDateString()) {
+            horaInicioPermitida = (horaActual < 23) ? (horaActual + 1) : 23;
+        }
+        //console.log(fechaSeleccionada.toDateString());
+        
+
+        //console.log(ft);
+        //console.log(horaInicioPermitida);
+        // Limpia las opciones actuales
+        horaInicioSelect.innerHTML = '5';
+
+        // Agrega las nuevas opciones
+        for (let hora = horaInicioPermitida; hora <= 23; hora++) {
+            const horaFormateada = hora.toString().padStart(2, '0');
+            const option = new Option(`${horaFormateada}:00`, `${horaFormateada}:00`);
+            horaInicioSelect.appendChild(option);
+        }
+    }
+
+    // Agregar un evento de cambio al campo de fecha para actualizar las horas
+    document.getElementById("fecha").addEventListener("change", actualizarHoras);
+
+    // Llamar a la función para configurar las horas iniciales al cargar la página
+    actualizarHoras();
+    </script>
+</body>
 </html>
